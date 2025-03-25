@@ -59,32 +59,28 @@ namespace JobsParser.Infrastructure.Parsers.Detail
         {
             JObject jObject = JObject.Parse(json);
 
+            var description = string.Join(", ", ParseList(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.textSections[?(@.sectionType == 'responsibilities')].textElements[*]")) + "\n\n" + string.Join(", ", ParseList(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.textSections[?(@.sectionType == 'requirements-expected')].textElements[*]"));
+            var employer = new Employer()
+            {
+                Name = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.displayEmployerName")?.ToString(),
+            };
+
             return new OfferDto
             {
-                OfferUrl = new Uri(jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.offerAbsoluteUrl")?.ToString()),
-                ApplicationUrl = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.applying.applyUrl")?.ToString(),
-                IsActive = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.publicationDetails.isActive")?.ToObject<bool?>(),
-                OneClickApply = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.applying.oneClickApply")?.ToObject<bool?>(),
-                CreatedAt = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.publicationDetails.dateOfInitialPublicationUtc")?.ToObject<DateTime?>(),
-                UpdatedAt = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.publicationDetails.lastPublishedUtc")?.ToObject<DateTime?>(),
-                ValidUntil = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.publicationDetails.expirationDateTimeUtc")?.ToObject<DateTime?>(),
-                SourceOfferId = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.jobOfferWebId")?.ToObject<int?>(),
+                Url = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.offerAbsoluteUrl")?.ToString(),
                 Title = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.jobTitle")?.ToString(),
-                Description = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.description")?.ToString(),
-                EmployerId = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.employerId")?.ToObject<int?>(),
-                Employer = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.displayEmployerName")?.ToString(),
+                Description = description,
                 Location = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.attributes.workplaces[0].displayAddress")?.ToString(),
+                Employer = employer,
+
                 Technologies = ParseTechnologies(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.secondaryAttributes[?(@.code == 'it-technologies-highlighted')].model.items[*].name"),
-                Responsibilities = string.Join(", ", ParseList(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.textSections[?(@.sectionType == 'responsibilities')].textElements[*]")),
-                Requirements = string.Join(", ", ParseList(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.textSections[?(@.sectionType == 'requirements-expected')].textElements[*]")),
-                WorkModes = ParseWorkModes(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.attributes.employment.workModes[*].pracujPlName"),
-                PositionLevels = ParsePositionLevels(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.attributes.employment.positionLevels[*].pracujPlName"),
-                AboutUs = jObject.SelectToken("$.props.pageProps.dehydratedState.queries[0].state.data.textSections[?(@.sectionType == 'about-us-description')].textElements[0]")?.ToString(),
+                WorkMode = ParseWorkMode(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.attributes.employment.workModes[*].pracujPlName"),
+                PositionLevel = ParsePositionLevel(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.attributes.employment.positionLevels[*].pracujPlName"),
                 ContractDetails = ParseContractDetails(jObject, "$.props.pageProps.dehydratedState.queries[0].state.data.attributes.employment.typesOfContract[*]")
             };
         }
 
-        private static List<WorkMode> ParseWorkModes(JObject jObject, string jsonPath)
+        private static WorkMode ParseWorkMode(JObject jObject, string jsonPath)
         {
             var tokens = jObject.SelectTokens(jsonPath);
             List<WorkMode> results = new();
@@ -98,10 +94,10 @@ namespace JobsParser.Infrastructure.Parsers.Detail
                     }
                 }
             }
-            return results;
+            return results.Any() ? results[0] : null;
         }
 
-        private static List<PositionLevel> ParsePositionLevels(JObject jObject, string jsonPath)
+        private static PositionLevel ParsePositionLevel(JObject jObject, string jsonPath)
         {
             var tokens = jObject.SelectTokens(jsonPath);
             List<PositionLevel> results = new();
@@ -115,7 +111,7 @@ namespace JobsParser.Infrastructure.Parsers.Detail
                     }
                 }
             }
-            return results;
+            return results.Any() ? results[0] : null;
         }
 
         private static List<Technology> ParseTechnologies(JObject jObject, string jsonPath)
@@ -152,7 +148,7 @@ namespace JobsParser.Infrastructure.Parsers.Detail
             return results;
         }
 
-        private static List<ContractDetails> ParseContractDetails(JObject jObject, string jsonPath)
+        private static ContractDetails ParseContractDetails(JObject jObject, string jsonPath)
         {
             var tokens = jObject.SelectTokens(jsonPath);
             List<ContractDetails> results = new();
@@ -174,7 +170,7 @@ namespace JobsParser.Infrastructure.Parsers.Detail
                     }
                 }
             }
-            return results;
+            return results.Any() ? results[0] : null;
         }
         #endregion
     }

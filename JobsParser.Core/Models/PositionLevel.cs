@@ -2,9 +2,8 @@
 {
     public class PositionLevel
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
-        public Guid JobOfferId { get; set; }
-        public OfferDto JobOffer { get; set; }
+        public ICollection<OfferDto> Offers { get; set; }
     }
 }

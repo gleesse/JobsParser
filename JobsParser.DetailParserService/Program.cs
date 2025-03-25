@@ -2,6 +2,7 @@
 using JobsParser.Core.Abstractions;
 using JobsParser.Core.Models;
 using JobsParser.Infrastructure.Database;
+using JobsParser.Infrastructure.Factories;
 using JobsParser.Infrastructure.Http;
 using JobsParser.Infrastructure.Parsers.Detail;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace JobsParser.DetailParserService
 {
@@ -22,14 +24,27 @@ namespace JobsParser.DetailParserService
             logger.LogInformation("DetailParserApp starting...");
 
             var queueService = host.Services.GetRequiredService<IQueueService>();
+            var parserFactory = host.Services.GetRequiredService<IParserFactory>();
             var offerRepository = host.Services.GetRequiredService<IOfferRepository>();
-            var detailParserService = host.Services.GetRequiredService<IOfferDetailParser>();
+            var websites = host.Services.GetRequiredService<IOptions<List<WebsiteConfiguration>>>().Value;
 
             await queueService.ConsumeAsync<OfferLinkDto>("offer_details_queue", async (offerLink) =>
             {
                 logger.LogInformation($"Received offer link: {offerLink.SourceUrl}");
-                var offer = await detailParserService.ParseAsync(offerLink.SourceUrl, default);
-                await offerRepository.SaveOfferAsync(offer, default);
+                var detailParserOptions = websites.FirstOrDefault(website => website.SiteUrl == offerLink.SourceUrl.Host)?.DetailParserOptions;
+                if (detailParserOptions is null) throw new ArgumentException($"Detail parser is not configured for such website: {offerLink.SourceUrl.Host}");
+
+                var offerExistsInDatabae = await offerRepository.OfferExistsAsync(offerLink.SourceUrl.ToString());
+
+                if (!offerExistsInDatabae)
+                {
+                    logger.LogInformation($"Offer link not found in a database. Starting parsing: {offerLink.SourceUrl}");
+                    var parser = parserFactory.GetDetailParser(detailParserOptions);
+                    //TODO парсит хорошо и записывает тоже, но так как каждый раз создается новый емплоер, воркмод, технологии и тд
+                    //создаются дубликаты. Надо сделать чтобы он по названию искал в базе и если нет то добавлял
+                    var offer = await parser.ParseAsync(offerLink.SourceUrl, default);
+                    await offerRepository.SaveOfferAsync(offer, default);
+                }
                 logger.LogInformation($"Processed offer link: {offerLink.SourceUrl}");
             }, default);
 
@@ -70,10 +85,12 @@ namespace JobsParser.DetailParserService
                     services.AddTransient<IHttpClientWrapper, HttpClientWrapper>();
                     services.AddTransient<IOfferDetailParser, PracujDetailParser>();
                     services.AddTransient<IOfferRepository, OfferRepository>();
+                    services.Configure<List<WebsiteConfiguration>>(hostContext.Configuration.GetSection("Websites"));
 
                     // Configuration of RabbitMQ
                     services.Configure<RabbitSettings>(hostContext.Configuration.GetSection("RabbitSettings"));
                     services.AddSingleton<IQueueService, RabbitMqService>();
+                    services.AddSingleton<IParserFactory, DefaultParserFactory>();
                 });
     }
 }

@@ -1,6 +1,10 @@
-﻿namespace JobsParser.Core.Abstractions
+﻿using JobsParser.Core.Models;
+
+namespace JobsParser.Core.Abstractions
 {
-    internal interface IParserFactory
+    public interface IParserFactory
     {
+        IOfferLinkParser GetLinkParser(LinkParserOptions options);
+        IOfferDetailParser GetDetailParser(DetailParserOptions options);
     }
 }

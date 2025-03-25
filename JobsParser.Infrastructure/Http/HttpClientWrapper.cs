@@ -39,7 +39,10 @@ namespace JobsParser.Infrastructure.Http
         public async Task<HttpResponseMessage> GetAsync(string url, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"GET {url}");
-            return await _httpClient.GetAsync(url, cancellationToken);
+            var result = await _httpClient.GetAsync(url, cancellationToken);
+            result.EnsureSuccessStatusCode();
+
+            return result;
         }
     }
 }

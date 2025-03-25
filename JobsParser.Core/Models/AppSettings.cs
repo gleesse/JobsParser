@@ -4,8 +4,6 @@
     {
         public DatabaseSettings DatabaseSettings { get; set; }
         public RabbitSettings RabbitSettings { get; set; }
-        public List<ParserSettings> Parsers { get; set; } = [];
-        public Dictionary<string, string> ParserMappings { get; set; } = [];
     }
 
     public class DatabaseSettings
@@ -19,9 +17,27 @@
         public string HostName { get; set; }
     }
 
-    public class ParserSettings
+    public class WebsiteConfiguration
     {
         public string Name { get; set; }
-        public List<string> SearchUrls { get; set; }
+        public string SiteUrl { get; set; }
+        public IEnumerable<string> SearchUrls { get; set; }
+        public LinkParserOptions LinkParserOptions { get; set; }
+        public DetailParserOptions DetailParserOptions { get; set; }
+    }
+
+    public class LinkParserOptions
+    {
+        public string Type { get; set; }
+        public string ItemSelector { get; set; }
+        public string NextPageButtonSelector { get; set; }
+        public string ClickWhenLoadedSelector { get; set; }
+    }
+
+    public class DetailParserOptions
+    {
+        public string Type { get; set; }
+        public string ItemSelector { get; set; }
+        public string NextPageSelector { get; set; }
     }
 }
