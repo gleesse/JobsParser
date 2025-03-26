@@ -10,18 +10,10 @@ namespace JobsParser.Infrastructure.Parsers.Link
         private readonly IPage _page;
         private readonly ILogger<InfiniteScrollJobOfferLinkParser> _logger;
 
-        public InfiniteScrollJobOfferLinkParser(ILogger<InfiniteScrollJobOfferLinkParser> logger)
+        public InfiniteScrollJobOfferLinkParser(ILogger<InfiniteScrollJobOfferLinkParser> logger, IPage page)
         {
             _logger = logger;
-
-            var playwright = Playwright.CreateAsync().GetAwaiter().GetResult();
-            var browser = playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false }).GetAwaiter().GetResult();
-            var context = browser.NewContextAsync(new BrowserNewContextOptions
-            {
-                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
-            }).Result;
-
-            _page = browser.NewPageAsync().GetAwaiter().GetResult();
+            _page = page;
         }
 
         public IEnumerable<OfferLinkDto> ParseOfferLinksFromWebsite(WebsiteConfiguration website)

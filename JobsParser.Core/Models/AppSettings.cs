@@ -1,17 +1,5 @@
 ﻿namespace JobsParser.Core.Models
 {
-    public class AppSettings
-    {
-        public DatabaseSettings DatabaseSettings { get; set; }
-        public RabbitSettings RabbitSettings { get; set; }
-    }
-
-    public class DatabaseSettings
-    {
-        public string ConnectionString { get; set; }
-        public int Timeout { get; set; }
-    }
-
     public class RabbitSettings
     {
         public string HostName { get; set; }
@@ -47,7 +35,8 @@
         public string Type { get; set; }
         public string JsonScriptSelector { get; set; }
         public string TitleSelector { get; set; }
-        public string DescriptionSelector { get; set; }
+        public string ResponsibilitiesSelector { get; set; }
+        public string RequirementsSelector { get; set; }
         public string LocationSelector { get; set; }
         public string EmployerNameSelector { get; set; }
         public string WorkModeSelector { get; set; }

@@ -116,13 +116,13 @@ namespace JobParsers.Infrastructure.Queue
             {
                 var json = JsonSerializer.Serialize(message);
                 var body = Encoding.UTF8.GetBytes(json);
-                
+
                 // In v7.0.0, BasicProperties is now a class, not an interface
                 var properties = new BasicProperties
                 {
                     Persistent = true,
-                    Headers = _settings.EnableRetries 
-                        ? new Dictionary<string, object> { { "x-retry-count", "0" } } 
+                    Headers = _settings.EnableRetries
+                        ? new Dictionary<string, object> { { "x-retry-count", "0" } }
                         : null
                 };
 

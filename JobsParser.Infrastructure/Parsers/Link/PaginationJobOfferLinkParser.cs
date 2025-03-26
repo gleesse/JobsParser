@@ -11,18 +11,10 @@ namespace JobsParser.Infrastructure.Parsers.Link
         private readonly IPage _page;
         private readonly ILogger<PaginationJobOfferLinkParser> _logger;
 
-        public PaginationJobOfferLinkParser(ILogger<PaginationJobOfferLinkParser> logger)
+        public PaginationJobOfferLinkParser(ILogger<PaginationJobOfferLinkParser> logger, IPage page)
         {
             _logger = logger;
-
-            var playwright = Playwright.CreateAsync().GetAwaiter().GetResult();
-            var browser = playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false }).GetAwaiter().GetResult();
-            var context = browser.NewContextAsync(new BrowserNewContextOptions
-            {
-                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"
-            }).Result;
-
-            _page = browser.NewPageAsync().GetAwaiter().GetResult();
+            _page = page;
         }
 
         public IEnumerable<OfferLinkDto> ParseOfferLinksFromWebsite(WebsiteConfiguration website)
@@ -69,12 +61,7 @@ namespace JobsParser.Infrastructure.Parsers.Link
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
                 await DeleteDialogElementsAsync();
-                bool clickResult = await ClickAsync(options.ClickWhenLoadedSelector);
-                if (!clickResult)
-                {
-                    _logger.LogWarning("Failed to click loaded selector. Breaking loop.");
-                    break;
-                }
+                await ClickAsync(options.ClickWhenLoadedSelector);
 
                 var extractedLinks = await ExtractLinksFromCurrentPageAsync(options);
                 links.AddRange(extractedLinks);
@@ -88,12 +75,7 @@ namespace JobsParser.Infrastructure.Parsers.Link
                 }
 
                 await DeleteDialogElementsAsync();
-                bool nextPageClickResult = await ClickAsync(options.NextPageButtonSelector);
-                if (!nextPageClickResult)
-                {
-                    _logger.LogWarning("Failed to click next page. Breaking loop.");
-                    break;
-                }
+                await ClickAsync(options.NextPageButtonSelector);
 
                 await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
             }
@@ -130,10 +112,11 @@ namespace JobsParser.Infrastructure.Parsers.Link
             return links;
         }
 
-        private async Task<bool> ClickAsync(string selector)
+        private async Task<int> ClickAsync(string selector)
         {
             try
             {
+                _logger.LogInformation($"Find and click elements for selector: {selector}.");
                 var elements = (await _page.QuerySelectorAllAsync(selector)).ToList();
                 if (elements != null && elements.Count > 0)
                 {
@@ -147,15 +130,14 @@ namespace JobsParser.Infrastructure.Parsers.Link
                     });
 
                     await Task.WhenAll(clickTasks);
-                    return true;
                 }
-                _logger.LogInformation("Element not found or not visible.");
-                return false;
+                _logger.LogInformation($"Element not found.");
+                return 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error clicking element for selector: {selector}");
-                return false;
+                _logger.LogError(ex, $"Error clicking the element.");
+                throw ex;
             }
         }
 

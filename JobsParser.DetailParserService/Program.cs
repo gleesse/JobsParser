@@ -49,7 +49,7 @@ namespace JobsParser.DetailParserService
                     catch (Exception ex)
                     {
                         logger.LogError(ex, $"Error parsing or saving offer from: {offerLink.SourceUrl}");
-                        // Future improvement: Add to a dead-letter queue for retry
+                        throw;
                     }
                 }
                 else

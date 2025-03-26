@@ -76,7 +76,8 @@ namespace JobsParser.Infrastructure.Database
                 entity.Property(e => e.AudDate);
                 entity.Property(e => e.Url);
                 entity.Property(e => e.Title);
-                entity.Property(e => e.Description);
+                entity.Property(e => e.Requirements);
+                entity.Property(e => e.Responsibilities);
                 entity.Property(e => e.Location);
 
                 entity.HasOne(e => e.Employer)

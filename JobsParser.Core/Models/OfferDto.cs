@@ -6,7 +6,8 @@
         public DateTime? AudDate { get; set; } = DateTime.Now;
         public string? Url { get; set; }
         public string? Title { get; set; }
-        public string? Description { get; set; }
+        public string? Requirements { get; set; }
+        public string? Responsibilities { get; set; }
         public string? Location { get; set; }
         public Employer Employer { get; set; }
         public ContractDetails? ContractDetails { get; set; }
