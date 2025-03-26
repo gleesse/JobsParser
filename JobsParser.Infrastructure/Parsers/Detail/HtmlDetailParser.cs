@@ -1,150 +1,102 @@
 ﻿using HtmlAgilityPack;
 using JobsParser.Core.Abstractions;
 using JobsParser.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace JobsParser.Infrastructure.Parsers.Detail
 {
     public class HtmlDetailParser : IOfferDetailParser
     {
-        public Task<OfferDto> ParseAsync(Uri offerUrl, CancellationToken cancellationToken = default)
+        private readonly IHttpClientWrapper _httpClient;
+        private readonly ILogger<HtmlDetailParser> _logger;
+        private readonly DetailParserOptions _options;
+
+        public HtmlDetailParser(IHttpClientWrapper httpClient, ILogger<HtmlDetailParser> logger, DetailParserOptions options)
         {
-            throw new NotImplementedException();
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-
-        private readonly HttpClient _httpClient;
-
-        public HtmlDetailParser()
+        public async Task<OfferDto> ParseAsync(Uri offerUrl)
         {
-            _httpClient = new HttpClient();
+            try
+            {
+                _logger.LogInformation($"Parsing job offer from URL: {offerUrl}");
+
+                // Fetch HTML content
+                var response = await _httpClient.GetAsync(offerUrl.ToString());
+                string html = await response.Content.ReadAsStringAsync();
+
+                // Parse HTML
+                return ParseOfferFromHtml(html, offerUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error parsing job offer from {offerUrl}");
+                throw;
+            }
         }
 
-        public HtmlDetailParser(HttpClient httpClient)
+        private OfferDto ParseOfferFromHtml(string html, Uri sourceUrl)
         {
-            _httpClient = httpClient;
-        }
+            var doc = new HtmlDocument();
+            doc.LoadHtml(html);
 
-        //public async Task<OfferDto> ParseOfferAsync(string url, DetailParserOptions options)
-        //{
-        //    try
-        //    {
-        //        var html = await _httpClient.GetStringAsync(url);
-        //        return ParseOffer(html, url, options);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Error fetching or parsing URL: {url}. Error: {ex.Message}");
-        //        throw;
-        //    }
-        //}
+            var offer = new OfferDto
+            {
+                Url = sourceUrl.ToString()
+            };
 
-        //public OfferDto ParseOffer(string html, string sourceUrl, DetailParserOptions options)
-        //{
-        //    var doc = new HtmlDocument();
-        //    doc.LoadHtml(html);
-        //
-        //    var offer = new OfferDto
-        //    {
-        //        OfferUrl = sourceUrl
-        //    };
-        //
-        //    // Parse single value fields
-        //    offer.Title = ExtractText(doc, options.JobTitleSelector);
-        //    offer.ApplicationUrl = ExtractAttribute(doc, options.ApplicationUrlSelector, "href");
-        //    offer.PositionLevels = ExtractText(doc, options.PositionLevelSelector);
-        //    offer.WorkModes = ExtractText(doc, options.WorkModeSelector);
-        //    offer.Location = ExtractText(doc, options.PlaceSelector);
-        //    offer.AboutUs = ExtractText(doc, options.AboutProjectSelector);
-        //    offer.Responsibilities = ExtractText(doc, options.ResponsibilitiesSelector);
-        //    offer.Requirements = ExtractText(doc, options.RequirementsSelector);
-        //
-        //    // Parse dates
-        //    if (!string.IsNullOrEmpty(options.DateCreatedSelector))
-        //    {
-        //        var dateText = ExtractText(doc, options.DateCreatedSelector);
-        //        if (DateTime.TryParse(dateText, out DateTime dateCreated) ||
-        //            DateTime.TryParseExact(dateText, options.DateFormat, null, System.Globalization.DateTimeStyles.None, out dateCreated))
-        //        {
-        //            offer.DateCreated = dateCreated;
-        //        }
-        //    }
-        //
-        //    if (!string.IsNullOrEmpty(options.ExpirationDateSelector))
-        //    {
-        //        var expirationText = ExtractText(doc, options.ExpirationDateSelector);
-        //        if (DateTime.TryParse(expirationText, out DateTime expirationDate) ||
-        //            DateTime.TryParseExact(expirationText, options.DateFormat, null, System.Globalization.DateTimeStyles.None, out expirationDate))
-        //        {
-        //            offer.ExpirationDate = expirationDate;
-        //        }
-        //    }
-        //
-        //    // Parse lists
-        //    if (!string.IsNullOrEmpty(options.TechnologiesSelector))
-        //    {
-        //        var techList = doc.DocumentNode.SelectSingleNode(options.TechnologiesSelector);
-        //        if (techList != null)
-        //        {
-        //            if (!string.IsNullOrEmpty(options.TechnologyItemSelector))
-        //            {
-        //                var techItems = techList.SelectNodes(options.TechnologyItemSelector);
-        //                if (techItems != null)
-        //                {
-        //                    foreach (var item in techItems)
-        //                    {
-        //                        offer.Technologies.Add(item.InnerText.Trim());
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                offer.Technologies.Add(techList.InnerText.Trim());
-        //            }
-        //        }
-        //    }
-        //
-        //    if (!string.IsNullOrEmpty(options.BenefitsSelector))
-        //    {
-        //        var benefitsList = doc.DocumentNode.SelectSingleNode(options.BenefitsSelector);
-        //        if (benefitsList != null)
-        //        {
-        //            if (!string.IsNullOrEmpty(options.BenefitItemSelector))
-        //            {
-        //                var benefitItems = benefitsList.SelectNodes(options.BenefitItemSelector);
-        //                if (benefitItems != null)
-        //                {
-        //                    foreach (var item in benefitItems)
-        //                    {
-        //                        offer.Benefits.Add(item.InnerText.Trim());
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                offer.Benefits.Add(benefitsList.InnerText.Trim());
-        //            }
-        //        }
-        //    }
-        //
-        //    return offer;
-        //}
+            try
+            {
+                // Parse basic properties
+                offer.Title = ParserHelper.ExtractText(doc, _options.TitleSelector);
+                offer.Description = ParserHelper.ExtractText(doc, _options.DescriptionSelector);
+                offer.Location = ParserHelper.ExtractText(doc, _options.LocationSelector);
 
-        private string ExtractText(HtmlDocument doc, string selector)
-        {
-            if (string.IsNullOrEmpty(selector))
-                return null;
+                // Parse related entities
+                offer.Employer = ParserHelper.CreateEmployer(
+                    ParserHelper.ExtractText(doc, _options.EmployerNameSelector)
+                );
 
-            var node = doc.DocumentNode.SelectSingleNode(selector);
-            return node?.InnerText.Trim();
-        }
+                offer.WorkMode = ParserHelper.CreateWorkMode(
+                    ParserHelper.ExtractText(doc, _options.WorkModeSelector)
+                );
 
-        private string ExtractAttribute(HtmlDocument doc, string selector, string attributeName)
-        {
-            if (string.IsNullOrEmpty(selector) || string.IsNullOrEmpty(attributeName))
-                return null;
+                offer.PositionLevel = ParserHelper.CreatePositionLevel(
+                    ParserHelper.ExtractText(doc, _options.PositionLevelSelector)
+                );
 
-            var node = doc.DocumentNode.SelectSingleNode(selector);
-            return node?.GetAttributeValue(attributeName, null);
+                // Parse technologies
+                var technologies = ParserHelper.ExtractNodeList(doc, _options.TechnologiesSelector);
+                offer.Technologies = ParserHelper.CreateTechnologies(technologies);
+
+                // Parse contract details
+                var contractType = ParserHelper.ExtractText(doc, _options.ContractTypeSelector);
+
+                decimal? minSalary = ParserHelper.TryParseDecimal(
+                    ParserHelper.ExtractText(doc, _options.MinSalarySelector)
+                );
+
+                decimal? maxSalary = ParserHelper.TryParseDecimal(
+                    ParserHelper.ExtractText(doc, _options.MaxSalarySelector)
+                );
+
+                var currency = ParserHelper.ExtractText(doc, _options.CurrencySelector);
+                var timeUnit = ParserHelper.ExtractText(doc, _options.TimeUnitSelector);
+
+                offer.ContractDetails = ParserHelper.CreateContractDetails(
+                    contractType, minSalary, maxSalary, currency, timeUnit
+                );
+
+                return offer;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error parsing HTML content");
+                throw;
+            }
         }
     }
 }

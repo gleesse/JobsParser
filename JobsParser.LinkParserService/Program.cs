@@ -20,11 +20,12 @@ namespace JobsParser.LinkParserService
             var queueService = host.Services.GetRequiredService<IQueueService>();
             var parserFactory = host.Services.GetRequiredService<IParserFactory>();
             var websites = host.Services.GetRequiredService<IOptions<List<WebsiteConfiguration>>>().Value;
+            var rabbitSettings = host.Services.GetRequiredService<IOptions<RabbitSettings>>().Value;
             logger.LogInformation("LinkParserApp starting...");
 
             foreach (var website in websites)
             {
-                await ProcessUri(website, parserFactory, queueService, logger);
+                await ProcessUri(website, parserFactory, queueService, logger, rabbitSettings);
             }
 
             logger.LogInformation("LinkParserApp completed. Press any key to exit.");
@@ -33,7 +34,7 @@ namespace JobsParser.LinkParserService
             await host.RunAsync();
         }
 
-        private static async Task ProcessUri(WebsiteConfiguration website, IParserFactory factory, IQueueService queueService, ILogger logger)
+        private static async Task ProcessUri(WebsiteConfiguration website, IParserFactory factory, IQueueService queueService, ILogger logger, RabbitSettings rabbitSettings)
         {
             try
             {
@@ -43,7 +44,7 @@ namespace JobsParser.LinkParserService
 
                 foreach (var link in offerLinks)
                 {
-                    await queueService.PublishAsync("offer_details_queue", link);
+                    await queueService.PublishAsync(rabbitSettings.LinksQueue, link);
                     logger.LogInformation($"Published offer link to queue: {link.SourceUrl}");
                 }
 
@@ -76,7 +77,6 @@ namespace JobsParser.LinkParserService
                    services.Configure<List<WebsiteConfiguration>>(hostContext.Configuration.GetSection("Websites"));
                    services.Configure<RabbitSettings>(hostContext.Configuration.GetSection("RabbitSettings"));
                    services.AddSingleton<IQueueService, RabbitMqService>();
-                   services.AddSingleton<IParserFactory, DefaultParserFactory>();
                    services.AddSingleton<IParserFactory, DefaultParserFactory>();
                });
     }

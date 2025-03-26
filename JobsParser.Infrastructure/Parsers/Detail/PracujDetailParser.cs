@@ -18,7 +18,7 @@ namespace JobsParser.Infrastructure.Parsers.Detail
             _logger = logger;
         }
 
-        public async Task<OfferDto> ParseAsync(Uri offerUrl, CancellationToken cancellationToken = default)
+        public async Task<OfferDto> ParseAsync(Uri offerUrl)
         {
             var cleanJson = await GetCleanJsonAsync(offerUrl);
             return CreateJobOffer(cleanJson);

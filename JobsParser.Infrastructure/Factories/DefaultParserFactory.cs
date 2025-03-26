@@ -23,6 +23,9 @@ namespace JobsParser.Infrastructure.Factories
                     case "pagination":
                         var logger = _serviceProvider.GetRequiredService<ILogger<PaginationJobOfferLinkParser>>();
                         return new PaginationJobOfferLinkParser(logger);
+                    case "infinitescroll":
+                        var infiniteScrollLogger = _serviceProvider.GetRequiredService<ILogger<InfiniteScrollJobOfferLinkParser>>();
+                        return new InfiniteScrollJobOfferLinkParser(infiniteScrollLogger);
                     default:
                         throw new ArgumentException($"Such Type is not configured: {options.Type}");
                 }
@@ -36,13 +39,21 @@ namespace JobsParser.Infrastructure.Factories
                 switch (type)
                 {
                     case "pracuj":
-                        var logger = _serviceProvider.GetRequiredService<ILogger<PracujDetailParser>>();
+                        var pracujLogger = _serviceProvider.GetRequiredService<ILogger<PracujDetailParser>>();
                         var httpWrapper = _serviceProvider.GetRequiredService<IHttpClientWrapper>();
-                        return new PracujDetailParser(httpWrapper, logger);
+                        return new PracujDetailParser(httpWrapper, pracujLogger);
+                    case "json":
+                        var jsonLogger = _serviceProvider.GetRequiredService<ILogger<JsonDetailParser>>();
+                        var jsonHttpWrapper = _serviceProvider.GetRequiredService<IHttpClientWrapper>();
+                        return new JsonDetailParser(jsonHttpWrapper, jsonLogger, options);
+                    case "html":
+                        var htmlLogger = _serviceProvider.GetRequiredService<ILogger<HtmlDetailParser>>();
+                        var htmlHttpWrapper = _serviceProvider.GetRequiredService<IHttpClientWrapper>();
+                        return new HtmlDetailParser(htmlHttpWrapper, htmlLogger, options);
                     default:
                         throw new ArgumentException($"Such Type is not configured: {options.Type}");
                 }
-            }); ;
+            });
         }
     }
 }

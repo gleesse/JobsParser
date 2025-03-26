@@ -13,15 +13,15 @@ namespace JobsParser.Infrastructure.Database
             _dbContext = dbContext;
         }
 
-        public async Task SaveOfferAsync(OfferDto offer, CancellationToken cancellationToken = default)
+        public async Task SaveOfferAsync(OfferDto offer)
         {
             _dbContext.Offers.Add(offer);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<OfferDto>> GetOffersReadyForSubmissionAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<OfferDto>> GetOffersReadyForSubmissionAsync()
         {
-            return await _dbContext.Offers.ToListAsync(cancellationToken);
+            return await _dbContext.Offers.ToListAsync();
         }
 
         public async Task<bool> OfferExistsAsync(string url)
