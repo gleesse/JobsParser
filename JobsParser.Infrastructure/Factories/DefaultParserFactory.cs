@@ -4,6 +4,7 @@ using JobsParser.Infrastructure.Parsers.Detail;
 using JobsParser.Infrastructure.Parsers.Link;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Playwright;
 using System.Collections.Concurrent;
 
 namespace JobsParser.Infrastructure.Factories
@@ -18,11 +19,15 @@ namespace JobsParser.Infrastructure.Factories
         {
             return _cachedLinkParsers.GetOrAdd(options.Type, type =>
             {
+                var page = _serviceProvider.GetRequiredService<IPage>();
                 switch (type)
                 {
                     case "pagination":
                         var logger = _serviceProvider.GetRequiredService<ILogger<PaginationJobOfferLinkParser>>();
-                        return new PaginationJobOfferLinkParser(logger);
+                        return new PaginationJobOfferLinkParser(logger, page);
+                    case "infinitescroll":
+                        var infiniteScrollLogger = _serviceProvider.GetRequiredService<ILogger<InfiniteScrollJobOfferLinkParser>>();
+                        return new InfiniteScrollJobOfferLinkParser(infiniteScrollLogger, page);
                     default:
                         throw new ArgumentException($"Such Type is not configured: {options.Type}");
                 }
@@ -33,16 +38,20 @@ namespace JobsParser.Infrastructure.Factories
         {
             return _cachedDetailParsers.GetOrAdd(options.Type, type =>
             {
+                var httpClientWrapper = _serviceProvider.GetRequiredService<IHttpClientWrapper>();
                 switch (type)
                 {
-                    case "pracuj":
-                        var logger = _serviceProvider.GetRequiredService<ILogger<PracujDetailParser>>();
-                        var httpWrapper = _serviceProvider.GetRequiredService<IHttpClientWrapper>();
-                        return new PracujDetailParser(httpWrapper, logger);
+                    //case "json":
+                    //    var jsonLogger = _serviceProvider.GetRequiredService<ILogger<JsonDetailParser>>();
+                    //    return new JsonDetailParser(httpClientWrapper, jsonLogger, options);
+                    //case "html":
+                    //    var htmlLogger = _serviceProvider.GetRequiredService<ILogger<HtmlDetailParser>>();
+                    //    return new HtmlDetailParser(httpClientWrapper, htmlLogger, options);
                     default:
-                        throw new ArgumentException($"Such Type is not configured: {options.Type}");
+                        return new DetailParser(httpClientWrapper, _serviceProvider.GetRequiredService<ILogger<DetailParser>>(), options);
+                        //throw new ArgumentException($"Such Type is not configured: {options.Type}");
                 }
-            }); ;
+            });
         }
     }
 }

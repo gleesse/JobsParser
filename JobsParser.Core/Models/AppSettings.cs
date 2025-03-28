@@ -1,20 +1,16 @@
 ﻿namespace JobsParser.Core.Models
 {
-    public class AppSettings
-    {
-        public DatabaseSettings DatabaseSettings { get; set; }
-        public RabbitSettings RabbitSettings { get; set; }
-    }
-
-    public class DatabaseSettings
-    {
-        public string ConnectionString { get; set; }
-        public int Timeout { get; set; }
-    }
-
     public class RabbitSettings
     {
         public string HostName { get; set; }
+        public bool EnableRetries { get; set; }
+        public int RetryDelayMs { get; set; }
+        public int MaxRetries { get; set; }
+        public string RetryExchange { get; set; }
+        public string RetryQueue { get; set; }
+        public string FailedQueue { get; set; }
+        public string DetailsQueue { get; set; }
+        public string LinksQueue { get; set; }
     }
 
     public class WebsiteConfiguration
@@ -37,7 +33,19 @@
     public class DetailParserOptions
     {
         public string Type { get; set; }
-        public string ItemSelector { get; set; }
-        public string NextPageSelector { get; set; }
+        public string JsonScriptSelector { get; set; }
+        public string TitleSelector { get; set; }
+        public string ResponsibilitiesSelector { get; set; }
+        public string RequirementsSelector { get; set; }
+        public string LocationSelector { get; set; }
+        public string EmployerNameSelector { get; set; }
+        public string WorkModeSelector { get; set; }
+        public string PositionLevelSelector { get; set; }
+        public string TechnologiesSelector { get; set; }
+        public string ContractTypeSelector { get; set; }
+        public string MinSalarySelector { get; set; }
+        public string MaxSalarySelector { get; set; }
+        public string CurrencySelector { get; set; }
+        public string TimeUnitSelector { get; set; }
     }
 }

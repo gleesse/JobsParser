@@ -4,6 +4,6 @@ namespace JobsParser.Core.Abstractions
 {
     public interface IOfferDetailParser
     {
-        Task<OfferDto> ParseAsync(Uri offerUrl, CancellationToken cancellationToken = default);
+        Task<OfferDto> ParseAsync(Uri offerUrl);
     }
 }

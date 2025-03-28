@@ -4,7 +4,6 @@ using JobsParser.Core.Models;
 using JobsParser.Infrastructure.Database;
 using JobsParser.Infrastructure.Factories;
 using JobsParser.Infrastructure.Http;
-using JobsParser.Infrastructure.Parsers.Detail;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,28 +24,41 @@ namespace JobsParser.DetailParserService
 
             var queueService = host.Services.GetRequiredService<IQueueService>();
             var parserFactory = host.Services.GetRequiredService<IParserFactory>();
-            var offerRepository = host.Services.GetRequiredService<IOfferRepository>();
+            var dbContext = host.Services.GetRequiredService<AppDbContext>();
             var websites = host.Services.GetRequiredService<IOptions<List<WebsiteConfiguration>>>().Value;
+            var rabbitSettings = host.Services.GetRequiredService<IOptions<RabbitSettings>>().Value;
 
-            await queueService.ConsumeAsync<OfferLinkDto>("offer_details_queue", async (offerLink) =>
+            await queueService.ConsumeAsync<OfferLinkDto>(rabbitSettings.LinksQueue, async (offerLink) =>
             {
                 logger.LogInformation($"Received offer link: {offerLink.SourceUrl}");
                 var detailParserOptions = websites.FirstOrDefault(website => website.SiteUrl == offerLink.SourceUrl.Host)?.DetailParserOptions;
                 if (detailParserOptions is null) throw new ArgumentException($"Detail parser is not configured for such website: {offerLink.SourceUrl.Host}");
 
-                var offerExistsInDatabae = await offerRepository.OfferExistsAsync(offerLink.SourceUrl.ToString());
+                var offerExistsInDatabase = await dbContext.OfferExistsAsync(offerLink.SourceUrl.ToString());
 
-                if (!offerExistsInDatabae)
+                if (!offerExistsInDatabase)
                 {
-                    logger.LogInformation($"Offer link not found in a database. Starting parsing: {offerLink.SourceUrl}");
-                    var parser = parserFactory.GetDetailParser(detailParserOptions);
-                    //TODO парсит хорошо и записывает тоже, но так как каждый раз создается новый емплоер, воркмод, технологии и тд
-                    //создаются дубликаты. Надо сделать чтобы он по названию искал в базе и если нет то добавлял
-                    var offer = await parser.ParseAsync(offerLink.SourceUrl, default);
-                    await offerRepository.SaveOfferAsync(offer, default);
+                    try
+                    {
+                        logger.LogInformation($"Offer link not found in a database. Starting parsing: {offerLink.SourceUrl}");
+                        var parser = parserFactory.GetDetailParser(detailParserOptions);
+                        var offer = await parser.ParseAsync(offerLink.SourceUrl);
+                        await dbContext.SaveOfferAsync(offer);
+                        logger.LogInformation($"Successfully parsed and saved offer from: {offerLink.SourceUrl}");
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, $"Error parsing or saving offer from: {offerLink.SourceUrl}");
+                        throw;
+                    }
                 }
+                else
+                {
+                    logger.LogInformation($"Offer already exists in database: {offerLink.SourceUrl}");
+                }
+
                 logger.LogInformation($"Processed offer link: {offerLink.SourceUrl}");
-            }, default);
+            });
 
             logger.LogInformation("DetailParserApp is running. Press any key to exit.");
             Console.ReadKey();
@@ -69,7 +81,6 @@ namespace JobsParser.DetailParserService
                         // Add other log providers as needed
                     });
 
-
                     // Database Configuration
                     services.AddDbContext<AppDbContext>(options =>
                     {
@@ -83,8 +94,6 @@ namespace JobsParser.DetailParserService
 
                     // Add Dependencies
                     services.AddTransient<IHttpClientWrapper, HttpClientWrapper>();
-                    services.AddTransient<IOfferDetailParser, PracujDetailParser>();
-                    services.AddTransient<IOfferRepository, OfferRepository>();
                     services.Configure<List<WebsiteConfiguration>>(hostContext.Configuration.GetSection("Websites"));
 
                     // Configuration of RabbitMQ
