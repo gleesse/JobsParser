@@ -5,7 +5,7 @@ Add support for
 - [ ] https://justjoin.it/
 - [ ] https://nofluffjobs.com/
 - [ ] https://www.linkedin.com/
-- [ ] https://www.pracuj.pl/
+- [x] https://www.pracuj.pl/
 - [ ] https://www.glassdoor.com/
       
 Automatic application service
