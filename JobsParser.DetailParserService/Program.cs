@@ -86,10 +86,10 @@ namespace JobsParser.DetailParserService
             {
                 int currentAttempt = 1;
 
-                while (currentAttempt <= serviceSettings.MaxAttempts)
+                while (currentAttempt <= serviceSettings.MaxRetryAttempts)
                 {
-                    int delayMinutes = serviceSettings.InitialDelayHours * 60 * (int)Math.Pow(2, currentAttempt - 1);
-                    logger.LogInformation($"Retry-After header not found. Using exponential backoff delay of {delayMinutes} minutes. Attempt {currentAttempt} of {serviceSettings.MaxAttempts}");
+                    int delayMinutes = serviceSettings.InitialRetryDelayHours * 60 * (int)Math.Pow(2, currentAttempt - 1);
+                    logger.LogInformation($"Retry-After header not found. Using exponential backoff delay of {delayMinutes} minutes. Attempt {currentAttempt} of {serviceSettings.MaxRetryAttempts}");
                     await Task.Delay(delayMinutes * 60000); // Convert to milliseconds
                     currentAttempt++;
                 }
@@ -128,6 +128,7 @@ namespace JobsParser.DetailParserService
 
                     // Configuration of RabbitMQ
                     services.Configure<RabbitSettings>(hostContext.Configuration.GetSection("RabbitSettings"));
+                    services.Configure<DetailParserServiceSettings>(hostContext.Configuration.GetSection("DetailParserServiceSettings"));
                     services.AddSingleton<IQueueService, RabbitMqService>();
                     services.AddSingleton<IParserFactory, DefaultParserFactory>();
                 });

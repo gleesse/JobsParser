@@ -18,7 +18,8 @@ namespace JobParsers.Infrastructure.Queue
 
         public RabbitMqService(IOptions<RabbitSettings> settings, ILogger<RabbitMqService> logger)
         {
-            ArgumentNullException.ThrowIfNull(settings);
+            if (settings == default) throw new ArgumentNullException(nameof(settings));
+
             _settings = settings.Value;
             _logger = logger;
 

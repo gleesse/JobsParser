@@ -2,8 +2,15 @@
 {
     public class DetailParserServiceSettings
     {
-        public int MaxAttempts { get; set; }
-        public int InitialDelayHours { get; set; }
+        public int MaxRetryAttempts { get; set; }
+        public int InitialRetryDelayHours { get; set; }
+    }
+
+    public class LinkParserServiceSettings
+    {
+        public int ExecutionIntervalHours { get; set; }
+        public int MaxRetryAttempts { get; set; }
+        public int InitialRetryDelayHours { get; set; }
     }
 
     public class RabbitSettings

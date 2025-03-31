@@ -1,5 +1,6 @@
 ﻿using JobsParser.Core.Abstractions;
 using JobsParser.Core.Models;
+using JobsParser.Infrastructure.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Playwright;
@@ -51,7 +52,10 @@ namespace JobsParser.Infrastructure.Parsers.Link
         private async Task<IEnumerable<OfferLinkDto>> ParseLinksFromUrlAsync(string searchUrl, LinkParserOptions options)
         {
             _logger.LogInformation("Navigating to URL: {Url}", searchUrl);
-            await _page.GotoAsync(searchUrl);
+            var response = await _page.GotoAsync(searchUrl);
+
+            response.EnsureResponseNotRateLimited();
+
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             var links = new List<OfferLinkDto>();
