@@ -1,21 +1,22 @@
 # Todo List
+- [ ] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 
-## 1. Automatic Pagination from Search URL
-- [ ] Implement logic to detect the next page URL from search results.
-- [ ] Create a function to handle pagination until no more pages are available.
-- [ ] Ensure the results from all pages are collected.
+Add support for
+- [ ] https://theprotocol.it/
+- [ ] https://justjoin.it/
+- [ ] https://nofluffjobs.com/
+- [ ] https://www.linkedin.com/
+- [x] https://www.pracuj.pl/
+- [ ] https://www.glassdoor.com/
+      
+Automatic application service
+- [ ] https://theprotocol.it/
+- [ ] https://justjoin.it/
+- [ ] https://nofluffjobs.com/
+- [ ] https://www.linkedin.com/
+- [ ] https://www.pracuj.pl/
+- [ ] https://www.glassdoor.com/
 
-## 2. Application Process
-- [ ] Define the overall flow of the application.
-- [ ] Identify main components (such as login, form filling, etc.) and their dependencies.
-- [ ] Map out the logic for handling each step and possible exceptions or errors.
-
-## 3. Containerization
-- [ ] Prepare Dockerfile(s) for the application.
-- [ ] Set up a development and production environment.
-- [ ] Test the container locally and ensure all dependencies are included.
-
-## 4. Regular Jobs for Links Parser
-- [ ] Set up a scheduler (e.g., cron job or task queue) for running the link parser at regular intervals.
-- [ ] Ensure it handles retries and logging.
-- [ ] Monitor performance and adjust intervals if necessary.
+Hosting
+- [ ] Host link parsing service
+- [ ] Setup RabbitMq on server
