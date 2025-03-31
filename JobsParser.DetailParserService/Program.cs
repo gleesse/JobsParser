@@ -2,6 +2,7 @@
 using JobsParser.Core.Abstractions;
 using JobsParser.Core.Models;
 using JobsParser.Infrastructure.Database;
+using JobsParser.Infrastructure.Exceptions;
 using JobsParser.Infrastructure.Factories;
 using JobsParser.Infrastructure.Http;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,7 @@ namespace JobsParser.DetailParserService
             var dbContext = host.Services.GetRequiredService<AppDbContext>();
             var websites = host.Services.GetRequiredService<IOptions<List<WebsiteConfiguration>>>().Value;
             var rabbitSettings = host.Services.GetRequiredService<IOptions<RabbitSettings>>().Value;
+            var serviceSettings = host.Services.GetRequiredService<IOptions<DetailParserServiceSettings>>().Value;
 
             await queueService.ConsumeAsync<OfferLinkDto>(rabbitSettings.LinksQueue, async (offerLink) =>
             {
@@ -46,6 +48,12 @@ namespace JobsParser.DetailParserService
                         await dbContext.SaveOfferAsync(offer);
                         logger.LogInformation($"Successfully parsed and saved offer from: {offerLink.SourceUrl}");
                     }
+                    catch (HttpTooManyRequestsException tooManyRequestsEx)
+                    {
+                        logger.LogError($"Received HTTP 429 Too Many Requests from: {tooManyRequestsEx.TargetUrl}");
+                        await HandleTooManyRequestsErrorAsync(tooManyRequestsEx, serviceSettings, logger);
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         logger.LogError(ex, $"Error parsing or saving offer from: {offerLink.SourceUrl}");
@@ -64,6 +72,28 @@ namespace JobsParser.DetailParserService
             Console.ReadKey();
 
             await host.RunAsync();
+        }
+
+        private static async Task HandleTooManyRequestsErrorAsync(HttpTooManyRequestsException tooManyRequestsEx, DetailParserServiceSettings serviceSettings, ILogger logger)
+        {
+            if (tooManyRequestsEx.Delay != null)
+            {
+                var retryAfterMinutes = tooManyRequestsEx.Delay.Value.TotalMinutes;
+                logger.LogInformation($"Retrying after {retryAfterMinutes} minutes.");
+                await Task.Delay(tooManyRequestsEx.Delay.Value);
+            }
+            else
+            {
+                int currentAttempt = 1;
+
+                while (currentAttempt <= serviceSettings.MaxAttempts)
+                {
+                    int delayMinutes = serviceSettings.InitialDelayHours * 60 * (int)Math.Pow(2, currentAttempt - 1);
+                    logger.LogInformation($"Retry-After header not found. Using exponential backoff delay of {delayMinutes} minutes. Attempt {currentAttempt} of {serviceSettings.MaxAttempts}");
+                    await Task.Delay(delayMinutes * 60000); // Convert to milliseconds
+                    currentAttempt++;
+                }
+            }
         }
 
         static IHostBuilder CreateHostBuilder(string[] args) =>

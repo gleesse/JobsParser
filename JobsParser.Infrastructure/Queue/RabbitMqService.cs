@@ -355,7 +355,7 @@ namespace JobParsers.Infrastructure.Queue
         private int CalculateDelayMs()
         {
             // Use configured delay
-            int delayMs = _settings.RetryDelayMs;
+            int delayMs = _settings.RetryDelayMinutes * 60000;
 
             // Add some random jitter to prevent message bursts (±10% variance)
             int jitterMs = (int)(delayMs * 0.1 * (new Random().NextDouble() - 0.5));

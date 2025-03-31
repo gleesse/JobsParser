@@ -1,4 +1,3 @@
-using HtmlAgilityPack;
 using JobsParser.Core.Models;
 
 namespace JobsParser.Infrastructure.Extensions

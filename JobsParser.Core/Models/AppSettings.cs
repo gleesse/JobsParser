@@ -1,10 +1,16 @@
 ﻿namespace JobsParser.Core.Models
 {
+    public class DetailParserServiceSettings
+    {
+        public int MaxAttempts { get; set; }
+        public int InitialDelayHours { get; set; }
+    }
+
     public class RabbitSettings
     {
         public string HostName { get; set; }
         public bool EnableRetries { get; set; }
-        public int RetryDelayMs { get; set; }
+        public int RetryDelayMinutes { get; set; }
         public int MaxRetries { get; set; }
         public string RetryExchange { get; set; }
         public string RetryQueue { get; set; }

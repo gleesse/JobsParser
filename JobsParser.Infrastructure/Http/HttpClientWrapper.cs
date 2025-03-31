@@ -1,5 +1,7 @@
 ﻿using JobsParser.Core.Abstractions;
+using JobsParser.Infrastructure.Exceptions;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace JobsParser.Infrastructure.Http
@@ -40,8 +42,14 @@ namespace JobsParser.Infrastructure.Http
         {
             _logger.LogInformation($"GET {url}");
             var result = await _httpClient.GetAsync(url, cancellationToken);
-            result.EnsureSuccessStatusCode();
 
+            if (result.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                var delay = result?.Headers?.RetryAfter?.Delta;
+                throw new HttpTooManyRequestsException($"Received HTTP429 Too Many Requests from url: {url}", url, delay);
+            }
+
+            result.EnsureSuccessStatusCode();
             return result;
         }
     }
