@@ -1,0 +1,76 @@
+{
+  "type": "sequence",
+  "commands": [
+    {
+      "type": "navigate",
+      "url": "${JobUrl}",
+      "waitUntil": "networkidle"
+    },
+    {
+      "type": "waitfor",
+      "selector": ".indeed-apply-button",
+      "timeout": "30000"
+    },
+    {
+      "type": "click",
+      "selector": ".indeed-apply-button",
+      "waitForNavigation": true
+    },
+    {
+      "type": "waitfor",
+      "selector": "#resume-upload-input, input[name='resume']",
+      "timeout": "15000"
+    },
+    {
+      "type": "upload",
+      "selector": "#resume-upload-input, input[name='resume']",
+      "filePath": "${ResumePath}"
+    },
+    {
+      "type": "waitfor",
+      "selector": "button.ia-continueButton",
+      "timeout": "10000"
+    },
+    {
+      "type": "click",
+      "selector": "button.ia-continueButton",
+      "waitForNavigation": false
+    },
+    {
+      "type": "waitfor",
+      "selector": "input.ia-ContactInfo-textInput[name='email']",
+      "timeout": "10000"
+    },
+    {
+      "type": "fill",
+      "selector": "input.ia-ContactInfo-textInput[name='email']",
+      "value": "your.email@example.com",
+      "clearFirst": true
+    },
+    {
+      "type": "waitfor",
+      "selector": "button.ia-continueButton",
+      "timeout": "5000"
+    },
+    {
+      "type": "click",
+      "selector": "button.ia-continueButton",
+      "waitForNavigation": false
+    },
+    {
+      "type": "waitfor",
+      "selector": "button.ia-continueButton, button[type='submit']",
+      "timeout": "10000"
+    },
+    {
+      "type": "click",
+      "selector": "button.ia-continueButton, button[type='submit']",
+      "waitForNavigation": true
+    },
+    {
+      "type": "waitfor",
+      "selector": ".ia-BasePage-footer, .ia-SuccessPage",
+      "timeout": "30000"
+    }
+  ]
+} 

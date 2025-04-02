@@ -1,0 +1,90 @@
+[
+  {
+    "fieldName": "FirstName",
+    "possibleSelectors": [
+      "#firstName",
+      "input[name='firstName']",
+      "input[name='first_name']",
+      "input[placeholder='First Name']"
+    ],
+    "dataValue": "${FirstName}",
+    "fieldType": "text"
+  },
+  {
+    "fieldName": "LastName",
+    "possibleSelectors": [
+      "#lastName",
+      "input[name='lastName']",
+      "input[name='last_name']",
+      "input[placeholder='Last Name']"
+    ],
+    "dataValue": "${LastName}",
+    "fieldType": "text"
+  },
+  {
+    "fieldName": "Email",
+    "possibleSelectors": [
+      "#email",
+      "input[name='email']",
+      "input[type='email']",
+      "input[placeholder='Email']"
+    ],
+    "dataValue": "${Email}",
+    "fieldType": "email"
+  },
+  {
+    "fieldName": "Phone",
+    "possibleSelectors": [
+      "#phone",
+      "input[name='phone']",
+      "input[name='phoneNumber']",
+      "input[placeholder='Phone']"
+    ],
+    "dataValue": "${Phone}",
+    "fieldType": "text"
+  },
+  {
+    "fieldName": "AgreeToTerms",
+    "possibleSelectors": [
+      "#termsAndConditions",
+      "input[name='agree']",
+      "input[name='terms']",
+      "input[type='checkbox'][id*='terms']"
+    ],
+    "dataValue": "true",
+    "fieldType": "checkbox"
+  },
+  {
+    "fieldName": "ExperienceLevel",
+    "possibleSelectors": [
+      "#experience",
+      "select[name='expLevel']",
+      "select[id*='experience']",
+      "select[name*='experience']"
+    ],
+    "dataValue": "${ExperienceLevel}",
+    "fieldType": "select"
+  },
+  {
+    "fieldName": "CV_Upload",
+    "possibleSelectors": [
+      "input[type='file'][name*='cv']",
+      "input[type='file'][name*='resume']",
+      "input[type='file'][id*='cv']",
+      "input[type='file'][id*='resume']"
+    ],
+    "dataValue": "${ResumeFilePath}",
+    "fieldType": "file"
+  },
+  {
+    "fieldName": "CoverLetter",
+    "possibleSelectors": [
+      "textarea[name*='cover']",
+      "textarea[id*='cover']",
+      "textarea[placeholder*='cover']",
+      "textarea[name*='letter']"
+    ],
+    "dataValue": "${CoverLetter}",
+    "fieldType": "textarea"
+  }
+] 

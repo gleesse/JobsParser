@@ -58,6 +58,9 @@ namespace JobsParser.LinkParserService
                 services.AddDbContext<AppDbContext>(options =>
                     options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]));
 
+                services.AddDbContextFactory<AppDbContext>(options =>
+                    options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]));
+
                 // Add the background service
                 services.AddHostedService<LinkParserBackgroundService>();
             });
