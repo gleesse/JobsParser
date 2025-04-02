@@ -12,6 +12,12 @@ Add support for
 - [ ] https://www.glassdoor.com/
       
 Automatic application service
+- [ ] Add browser reusing instead of re-creating for each link
+- [ ] Add error logging to file(also screenshots)
+- [ ] FieldForm config add flag optional
+- [ ] bool isAplied, shouldApply for offer
+- [ ] improve wait untill(now either waits for too long or doesnt wait at all(for example after clicking the button)
+- [ ] remove default task.delays
 - [ ] https://theprotocol.it/
 - [ ] https://justjoin.it/
 - [ ] https://nofluffjobs.com/
