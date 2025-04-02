@@ -32,7 +32,7 @@ namespace JobsParser.AutoApplyService.DSL
                 "sequence" => ParseSequenceCommand(node),
                 "ifelse" => ParseIfElseCommand(node),
                 "click" => ParseClickCommand(node),
-                "fill" => ParseFillFormCommand(node),
+                "fillform" => ParseFillFormCommand(node),
                 "navigate" => ParseNavigateCommand(node),
                 "exists" => ParseElementExistsCommand(node),
                 _ => throw new ArgumentException($"Unknown command type: {type}")

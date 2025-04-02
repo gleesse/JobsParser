@@ -21,7 +21,7 @@ namespace JobsParser.AutoApplyService
             ILogger<AutoApplyBackgroundService> logger,
             IServiceProvider serviceProvider,
             IOptions<AutoApplyServiceOptions> options,
-            WorkflowRepository workflowRepository,
+            IWorkflowRepository workflowRepository,
             WorkflowExecutor workflowExecutor)
         {
             _logger = logger;
@@ -83,32 +83,26 @@ namespace JobsParser.AutoApplyService
             _logger.LogInformation("Found {Count} pending applications", pendingLinks.Count);
 
             // Process each link in parallel, limited by MaxConcurrentInstances
-            var tasks = pendingLinks.Select(link => ProcessJobLinkAsync(link, stoppingToken));
+            var tasks = pendingLinks.Select(link => ProcessJobOfferAsync(link, stoppingToken));
             await Task.WhenAll(tasks);
         }
 
-        private async Task ProcessJobLinkAsync(OfferDto jobLink, CancellationToken stoppingToken)
+        private async Task ProcessJobOfferAsync(OfferDto jobOffer, CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Processing job link: {Url}", jobLink.Url);
+            ArgumentNullException.ThrowIfNull(jobOffer, nameof(jobOffer));
+
+            _logger.LogInformation("Processing job link: {Url}", jobOffer.Url);
 
             try
             {
                 var dbContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
-                var jobOffer = await dbContext.Offers
-                    .FirstOrDefaultAsync(o => o.Id == jobLink.Id, stoppingToken);
 
-                if (jobOffer == null)
-                {
-                    _logger.LogWarning("Job offer not found for link: {Url}", jobLink.Url);
-                    return;
-                }
-
-                string workflowName = DetermineWorkflowName(jobLink.Url);
+                string workflowName = DetermineWorkflowName(jobOffer.Url);
                 var workflow = await _workflowRepository.GetWorkflowAsync(workflowName);
 
                 // Create initial context with job data
                 var context = new CommandContext();
-                context.SetVariable("JobUrl", jobLink.Url);
+                context.SetVariable("JobUrl", jobOffer.Url);
                 context.SetVariable("JobTitle", jobOffer.Title);
                 context.SetVariable("JobId", jobOffer.Id.ToString());
                 context.SetVariable("CompanyName", jobOffer.Employer?.Name ?? "");
@@ -126,11 +120,11 @@ namespace JobsParser.AutoApplyService
 
                 await dbContext.SaveChangesAsync(stoppingToken);
 
-                _logger.LogInformation("Successfully applied to job: {Url}", jobLink.Url);
+                _logger.LogInformation("Successfully applied to job: {Url}", jobOffer.Url);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error applying to job: {Url}", jobLink.Url);
+                _logger.LogError(ex, "Error applying to job: {Url}", jobOffer.Url);
             }
         }
 
@@ -140,7 +134,7 @@ namespace JobsParser.AutoApplyService
 
             return domain switch
             {
-                "pracuj.pl" => "pracuj",
+                "www.pracuj.pl" => "pracuj",
                 "linkedin.com" => "linkedin",
                 "indeed.com" => "indeed",
                 _ => throw new ArgumentException($"No workflow defined for domain: {domain}"),

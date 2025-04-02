@@ -17,15 +17,13 @@ namespace JobsParser.AutoApplyService.DSL
 
             using var playwright = await Playwright.CreateAsync();
             var browserOptions = new BrowserTypeLaunchOptions();
-            if (_options.Headless)
-            {
-                browserOptions.Headless = _options.Headless;
-            }
+            browserOptions.Headless = _options.Headless;
+
             if (!string.IsNullOrEmpty(_options.BrowserChannel))
             {
                 browserOptions.Channel = _options.BrowserChannel;
             }
-            await using var browser = await playwright.Chromium.LaunchAsync();
+            await using var browser = await playwright.Chromium.LaunchAsync(browserOptions);
 
             try
             {

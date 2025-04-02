@@ -23,7 +23,7 @@
       "type": "ifelse",
       "condition": {
         "type": "exists",
-        "selector": "//a//span[contains(text(), 'Aplikuj szybko')]",
+        "selector": "//div[@data-test='section-quick-applying-sidebar']//span[contains(text(), 'Aplikuj szybko')]",
         "timeout": "5000"
       },
       "then": {
@@ -31,22 +31,12 @@
         "commands": [
           {
             "type": "click",
-            "selector": "//a//span[contains(text(), 'Aplikuj szybko')]",
+            "selector": "//div[@data-test='section-quick-applying-sidebar']//span[contains(text(), 'Aplikuj szybko')]",
             "waitForNavigation": true
           },
           {
-            "type": "genericformfill",
-            "configFilePath": "Configurations/potential_form_data.json"
-          },
-          {
-            "type": "click",
-            "selector": "//input[@id='future-recruitment-agreement']",
-            "waitForNavigation": false
-          },
-          {
-            "type": "click",
-            "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
-            "waitForNavigation": false
+            "type": "fillform",
+            "formId": "pracuj_form"
           }
         ]
       }

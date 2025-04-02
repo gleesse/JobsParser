@@ -19,9 +19,10 @@ IHost host = Host.CreateDefaultBuilder(args)
         });
 
         // DSL and Interpreter
-        services.AddSingleton<JsonDslInterpreter>();
-        services.AddSingleton<IWorkflowRepository, WorkflowRepository>(); //can be a singleton because it uses file storage, so concurrent work won't happen anyway since the file will be locked. 
+        services.AddSingleton<IJsonDslInterpreter, JsonDslInterpreter>();
         services.AddSingleton<IFormRepository, FormRepository>(); //can be a singleton because it uses file storage, so concurrent work won't happen anyway since the file will be locked. 
+        services.AddSingleton<IWorkflowRepository, WorkflowRepository>(); //can be a singleton because it uses file storage, so concurrent work won't happen anyway since the file will be locked. 
+        services.AddSingleton<WorkflowExecutor>(); //can be a singleton because it uses file storage, so concurrent work won't happen anyway since the file will be locked. 
 
         // Register the background service
         services.AddHostedService<AutoApplyBackgroundService>();
