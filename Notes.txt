@@ -1,0 +1,1 @@
+C# 12 primary constructor(konstruktor podstawowy) - uproszcza DI zeby nie miec kupe smieci i zmiennych w klasie

@@ -1,0 +1,58 @@
+{
+  "type": "sequence",
+  "commands": [
+    {
+      "type": "navigate",
+      "url": "${JobUrl}",
+      "waitUntil": "networkidle"
+    },
+    {
+      "type": "ifelse",
+      "condition": {
+        "type": "exists",
+        "selector": "button[data-test='button-submitCookie']",
+        "timeout": "1000"
+      },
+      "then": {
+        "type": "click",
+        "selector": "button[data-test='button-submitCookie']",
+        "waitForNavigation": false
+      }
+    },
+    {
+      "type": "ifelse",
+      "condition": {
+        "type": "exists",
+        "selector": "//div[@data-test='section-quick-applying-sidebar']//span[contains(text(), 'Aplikuj szybko')]",
+        "timeout": "1000"
+      },
+      "then": {
+        "type": "sequence",
+        "commands": [
+          {
+            "type": "click",
+            "selector": "//div[@data-test='section-quick-applying-sidebar']//span[contains(text(), 'Aplikuj szybko')]",
+            "waitForNavigation": true
+          },
+          {
+            "type": "fillform",
+            "formId": "pracuj_form"
+          },
+          {
+            "type": "ifelse",
+            "condition": {
+              "type": "exists",
+              "selector": "button[data-test='button-submitCookie']",
+              "timeout": "1000"
+            },
+            "then": {
+              "type": "click",
+              "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
+              "waitForNavigation": true
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

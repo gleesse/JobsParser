@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace JobsParser.DetailParserService
 {
@@ -74,7 +75,7 @@ namespace JobsParser.DetailParserService
             await host.RunAsync();
         }
 
-        private static async Task HandleTooManyRequestsErrorAsync(HttpTooManyRequestsException tooManyRequestsEx, DetailParserServiceSettings serviceSettings, ILogger logger)
+        private static async Task HandleTooManyRequestsErrorAsync(HttpTooManyRequestsException tooManyRequestsEx, DetailParserServiceSettings serviceSettings, ILogger<Program> logger)
         {
             if (tooManyRequestsEx.Delay != null)
             {
@@ -104,20 +105,23 @@ namespace JobsParser.DetailParserService
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    // Configure logging
                     services.AddLogging(builder =>
                     {
                         builder.AddConsole();
-                        // Add other log providers as needed
+
+                        var logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .Enrich.FromLogContext()
+                        .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
+                        .CreateLogger();
+                        builder.AddSerilog(logger);
                     });
 
-                    // Database Configuration
                     services.AddDbContext<AppDbContext>(options =>
                     {
                         options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]);
                     });
 
-                    // Add HttpClientFactory
                     services.AddHttpClient("default", (client) =>
                        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
                     );
