@@ -5,7 +5,7 @@ General todo
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 - [ ] Add browser reuse instead of re-creation for each link
 - [x] Adding an exit command. error/success
-- [ ] bool isAplied, shouldApply, appliedAt for the offer - maybe distinct table for logging tries?
+- [x] bool isAplied, shouldApply, appliedAt
 - [x] Add error logging to file
 - [x] Replace wait idle with load/domload
 - [x] Remove the default task.delays
