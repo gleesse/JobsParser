@@ -16,7 +16,7 @@ Automatic application service
 - [ ] Add error logging to file(also screenshots)
 - [ ] FieldForm config add flag optional
 - [ ] bool isAplied, shouldApply for offer
-- [ ] improve wait untill(now either waits for too long or doesnt wait at all(for example after clicking the button)
+- [ ] replace wait idle with load/domload
 - [ ] remove default task.delays
 - [ ] https://theprotocol.it/
 - [ ] https://justjoin.it/
