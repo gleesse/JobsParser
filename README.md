@@ -28,7 +28,7 @@ Automatic application service
 - [ ] https://www.glassdoor.com/
 
 Hosting
-- [ ] Host link parsing service
-- [ ] Host detail parsing service
+- [x] Host link parsing service
+- [x] Host detail parsing service
 - [ ] Host auto apply service
 - [x] Setup RabbitMq on server
