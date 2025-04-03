@@ -18,6 +18,7 @@ Automatic application service
 - [ ] bool isAplied, shouldApply for offer
 - [ ] replace wait idle with load/domload
 - [ ] remove default task.delays
+- [ ] check for element existance with locator.count to avoid auto-waiting and minimal timeout
 - [ ] https://theprotocol.it/
 - [ ] https://justjoin.it/
 - [ ] https://nofluffjobs.com/
