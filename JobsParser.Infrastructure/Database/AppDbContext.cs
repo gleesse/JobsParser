@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JobsParser.Infrastructure.Database
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public DbSet<OfferDto> Offers { get; set; }
         public DbSet<Employer> Employers { get; set; }
@@ -11,10 +11,7 @@ namespace JobsParser.Infrastructure.Database
         public DbSet<PositionLevel> PositionLevels { get; set; }
         public DbSet<Technology> Technologies { get; set; }
         public DbSet<ContractDetails> ContractDetails { get; set; }
-
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-        }
+        public DbSet<ApplicationAttempt> ApplicationAttempts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -79,6 +76,8 @@ namespace JobsParser.Infrastructure.Database
                 entity.Property(e => e.Requirements);
                 entity.Property(e => e.Responsibilities);
                 entity.Property(e => e.Location);
+                entity.Property(e => e.IsApplied).HasDefaultValue(false);
+                entity.Property(e => e.ShouldApply).HasDefaultValue(false);
 
                 entity.HasOne(e => e.Employer)
                     .WithMany(e => e.Offers)
@@ -98,6 +97,9 @@ namespace JobsParser.Infrastructure.Database
 
                 entity.HasMany(e => e.Technologies)
                     .WithMany(t => t.Offers);
+
+                entity.HasMany(e => e.ApplicationAttempts)
+                    .WithOne(a => a.Offer);
             });
 
             modelBuilder.Entity<WorkMode>(entity =>

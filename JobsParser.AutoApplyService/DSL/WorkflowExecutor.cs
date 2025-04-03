@@ -9,7 +9,7 @@ namespace JobsParser.AutoApplyService.DSL
     {
         private readonly PlaywrightOptions _options = options.Value;
 
-        public async Task<CommandContext> ExecuteWorkflowAsync(Command workflow, CommandContext? initialContext = null, bool closeBrowserWhenFinished = true)
+        public async Task<CommandContext> ExecuteWorkflowAsync(Command workflow, CommandContext? initialContext = null)
         {
             logger.LogInformation("Starting workflow execution");
 
@@ -58,8 +58,7 @@ namespace JobsParser.AutoApplyService.DSL
             }
             finally
             {
-                if (closeBrowserWhenFinished)
-                    await browser.CloseAsync();
+                await browser.CloseAsync();
             }
         }
 

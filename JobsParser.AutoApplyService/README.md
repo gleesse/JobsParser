@@ -27,6 +27,7 @@ The service uses a JSON-based DSL to define workflows for different job sites. T
 - `navigate`: Navigates to a URL
 - `exists`: Checks if an element exists on the page
 - `genericformfill`: Automatically fills form fields using a configuration file
+- `exit`: Defines success or error conditions for the workflow execution
 
 ### Example Workflow
 
@@ -52,10 +53,39 @@ The service uses a JSON-based DSL to define workflows for different job sites. T
       "type": "click",
       "selector": "button[type='submit']",
       "waitForNavigation": true
+    },
+    {
+      "type": "exit",
+      "selector": ".confirmation-message",
+      "success": true
     }
   ]
 }
 ```
+
+## Exit Command
+
+The exit command allows you to define the success or failure of a job application workflow. This command is used to mark the final status of the application process.
+
+The command sets `ApplicationSuccessful` in the context, which is later used to determine if the job offer was successfully applied to. If not successful, it also sets an `ApplicationErrorMessage`.
+
+### Example Exit Commands
+
+```json
+// Mark the application as successful
+{
+  "type": "exit",
+  "success": true
+}
+
+// Mark the application as failed
+{
+  "type": "exit",
+  "success": false
+}
+```
+
+In a typical workflow, you would use this at the end of your sequence or in conditional branches to indicate success or failure states.
 
 ## Generic Form Fill
 
@@ -124,6 +154,14 @@ The service is configured through the `appsettings.json` file:
 - `DefaultTimeoutMs`: Default timeout for actions in milliseconds
 - `AutoProcessNewLinks`: Whether to automatically process new job links
 
+## Performance Optimization
+
+The service includes several performance optimizations:
+
+1. **Browser Reuse**: A single browser instance is maintained and reused for multiple job applications instead of creating a new browser for each job.
+2. **Context Recycling**: Browser contexts are created for each job application but the underlying browser process is shared.
+3. **Resource Management**: The browser is properly disposed of when the service shuts down.
+
 ## Creating Custom Workflows
 
 To create a custom workflow for a specific job site:
@@ -139,4 +177,5 @@ The service uses several design patterns:
 - **Command Pattern**: Each action is a self-contained command object
 - **Composite Pattern**: Allows commands to be nested within other commands
 - **Interpreter Pattern**: Parses and executes the JSON DSL
-- **State Machine**: Manages transitions between steps in the application process 
+- **State Machine**: Manages transitions between steps in the application process
+- **Singleton Pattern**: Used for browser instance management 

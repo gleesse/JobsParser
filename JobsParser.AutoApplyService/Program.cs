@@ -23,7 +23,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         // Configuration
         services.Configure<AutoApplyServiceOptions>(hostContext.Configuration.GetSection("AutoApplyOptions"));
         services.Configure<PlaywrightOptions>(hostContext.Configuration.GetSection("PlaywrightOptions"));
-
+        
         // Database context
         services.AddDbContext<AppDbContext>(options =>
         {
