@@ -127,8 +127,7 @@ namespace JobsParser.AutoApplyService
                 jobOffer.ApplicationAttempts.Add(new ApplicationAttempt
                 {
                     AppliedAt = DateTime.UtcNow,
-                    Status = isApplied ? "Success" : "Failure",
-                    ErrorMsg = workflowName
+                    Status = isApplied ? "Success" : "Failure"
                 });
 
                 await dbContext.SaveChangesAsync(stoppingToken);
