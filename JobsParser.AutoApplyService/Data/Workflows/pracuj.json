@@ -11,7 +11,7 @@
       "condition": {
         "type": "exists",
         "selector": "button[data-test='button-submitCookie']",
-        "timeout": "5000"
+        "timeout": "1000"
       },
       "then": {
         "type": "click",
@@ -24,7 +24,7 @@
       "condition": {
         "type": "exists",
         "selector": "//div[@data-test='section-quick-applying-sidebar']//span[contains(text(), 'Aplikuj szybko')]",
-        "timeout": "5000"
+        "timeout": "1000"
       },
       "then": {
         "type": "sequence",
@@ -37,6 +37,19 @@
           {
             "type": "fillform",
             "formId": "pracuj_form"
+          },
+          {
+            "type": "ifelse",
+            "condition": {
+              "type": "exists",
+              "selector": "button[data-test='button-submitCookie']",
+              "timeout": "1000"
+            },
+            "then": {
+              "type": "click",
+              "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
+              "waitForNavigation": true
+            }
           }
         ]
       }

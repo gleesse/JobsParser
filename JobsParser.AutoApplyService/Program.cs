@@ -4,10 +4,22 @@ using JobsParser.AutoApplyService.Models;
 using JobsParser.AutoApplyService.Repositories;
 using JobsParser.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
+        services.AddLogging(builder =>
+        {
+            builder.AddConsole();
+
+            var logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .Enrich.FromLogContext()
+            .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+            builder.AddSerilog(logger);
+        });
         // Configuration
         services.Configure<AutoApplyServiceOptions>(hostContext.Configuration.GetSection("AutoApplyOptions"));
         services.Configure<PlaywrightOptions>(hostContext.Configuration.GetSection("PlaywrightOptions"));

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
+using Serilog;
 
 namespace JobsParser.LinkParserService
 {
@@ -31,6 +32,13 @@ namespace JobsParser.LinkParserService
                 services.AddLogging(builder =>
                 {
                     builder.AddConsole();
+
+                    var logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .Enrich.FromLogContext()
+                        .WriteTo.File("logs/app.log", rollingInterval: RollingInterval.Day)
+                        .CreateLogger();
+                    builder.AddSerilog(logger);
                 });
                 services.AddHttpClient("default", (client) =>
                     client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")

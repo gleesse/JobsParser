@@ -13,7 +13,7 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
             {
                 await Task.WhenAll(
                     page.ClickAsync(resolvedSelector, clickOptions),
-                    page.WaitForLoadStateAsync()
+                    page.WaitForLoadStateAsync(LoadState.NetworkIdle)
                 );
             }
             else
