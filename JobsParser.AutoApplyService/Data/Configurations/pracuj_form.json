@@ -7,6 +7,12 @@
       "selector": "input[name='firstName']",
       "dataValue": "${FirstName}",
       "fieldType": "text"
+    },
+    {
+      "fieldName": "LastName",
+      "selector": "input[name='lastName']",
+      "dataValue": "${LastName}",
+      "fieldType": "text"
     }
   ]
 }

@@ -55,6 +55,7 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
                 var element = page.Locator(resolvedSelector);
 
                 var count = await element.CountAsync();
+
                 if (count > 0)
                 {
                     var isVisible = await element.IsVisibleAsync();
