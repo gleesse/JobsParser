@@ -12,14 +12,16 @@ Add support for
 - [ ] https://www.glassdoor.com/
       
 Automatic application service
-- [ ] Add browser reusing instead of re-creating for each link
-- [ ] Add error logging to file(also screenshots)
-- [ ] FieldForm config add flag optional
-- [ ] bool isAplied, shouldApply for offer
-- [ ] replace wait idle with load/domload
-- [ ] remove default task.delays
-- [ ] check for element existance with locator.count to avoid auto-waiting and minimal timeout
-- [ ] add exit command. error/successful
+- [ ] Adding browser reuse instead of re-creation for each link
+- [x] Adding error logging to file
+- [ ] FieldForm configuration - add optional flag
+- [ ] bool isAplied, shouldApply for the offer
+- [ ] Replacing wait idle with load/domload
+- [ ] Removing the default task.delays
+- [ ] Checking the existence of an item with locator.count to avoid automatic wait and minimum timeout
+- [ ] Adding an exit command. error/success
+
+Translated with DeepL.com (free version)
 - [ ] https://theprotocol.it/
 - [ ] https://justjoin.it/
 - [ ] https://nofluffjobs.com/
