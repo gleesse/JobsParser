@@ -114,13 +114,33 @@ namespace JobsParser.AutoApplyService
 
                 await _workflowExecutor.ExecuteWorkflowAsync(workflow, context);
 
-                // Mark the job as applied todo
-                //jobLink.IsApplied = true;
-                //jobLink.AppliedAt = DateTime.UtcNow;
+                bool isApplied = false;
+                
+                if (context.TryGetVariable("WorkflowFinishedSuccessfully", out bool? successValue))
+                {
+                    isApplied = successValue ?? false;
+                }
+                //Mark the job as applied todo
+                jobOffer.IsApplied = isApplied;
+                jobOffer.ShouldApply = !isApplied;
+
+                jobOffer.ApplicationAttempts.Add(new ApplicationAttempt
+                {
+                    AppliedAt = DateTime.UtcNow,
+                    Status = isApplied ? "Success" : "Failure",
+                    ErrorMsg = workflowName
+                });
 
                 await dbContext.SaveChangesAsync(stoppingToken);
 
-                _logger.LogInformation("Successfully applied to job: {Url}", jobOffer.Url);
+                if (isApplied)
+                {
+                    _logger.LogInformation("Successfully applied to job: {Url}", jobOffer.Url);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to apply to job: {Url}", jobOffer.Url);
+                }
             }
             catch (Exception ex)
             {

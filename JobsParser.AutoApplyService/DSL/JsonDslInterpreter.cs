@@ -35,6 +35,7 @@ namespace JobsParser.AutoApplyService.DSL
                 "fillform" => ParseFillFormCommand(node),
                 "navigate" => ParseNavigateCommand(node),
                 "exists" => ParseElementExistsCommand(node),
+                "exit" => ParseExitCommand(node),
                 _ => throw new ArgumentException($"Unknown command type: {type}")
             };
         }
@@ -134,6 +135,17 @@ namespace JobsParser.AutoApplyService.DSL
             int? timeout = int.TryParse(node["timeout"]?.GetValue<string>(), out var parsedTimeout) ? parsedTimeout : null;
 
             return new ElementExistsCommand(selector, timeout);
+        }
+
+        private ExitCommand ParseExitCommand(JsonNode node)
+        {
+            var success = node["success"]?.GetValue<bool>();
+            if (success == null)
+            {
+                throw new ArgumentException("Exists command requires a success value");
+            }
+
+            return new ExitCommand(success.Value);
         }
         #endregion
     }

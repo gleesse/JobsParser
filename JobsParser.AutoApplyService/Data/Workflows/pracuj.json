@@ -50,6 +50,22 @@
               "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
               "waitForNavigation": true
             }
+          },
+          {
+            "type": "ifelse",
+            "condition": {
+              "type": "exists",
+              "selector": "//title[contains(text(), 'Dziękujemy')]",
+              "timeout": "1000"
+            },
+            "then": {
+              "type": "exit",
+              "success": true
+            },
+            "else": {
+              "type": "exit",
+              "success": false
+            }
           }
         ]
       }
