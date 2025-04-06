@@ -4,6 +4,8 @@
 General todo
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 - [ ] Add browser reuse instead of re-creation for each link
+- [ ] Link parser options add flag to cut off query(for example, pracuj includes searchId query)
+- [ ] Detail parser service - db context returned concurrent errors - to verify
 - [x] Adding an exit command. error/success
 - [x] bool isAplied, shouldApply, appliedAt
 - [x] Add error logging to file
