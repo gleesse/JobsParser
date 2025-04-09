@@ -6,6 +6,7 @@ using JobsParser.Infrastructure.Exceptions;
 using JobsParser.Infrastructure.Factories;
 using JobsParser.Infrastructure.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,13 +27,14 @@ namespace JobsParser.DetailParserService
 
             var queueService = host.Services.GetRequiredService<IQueueService>();
             var parserFactory = host.Services.GetRequiredService<IParserFactory>();
-            var dbContext = host.Services.GetRequiredService<AppDbContext>();
+            var dbContextFactory = host.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
             var websites = host.Services.GetRequiredService<IOptions<List<WebsiteConfiguration>>>().Value;
             var rabbitSettings = host.Services.GetRequiredService<IOptions<RabbitSettings>>().Value;
             var serviceSettings = host.Services.GetRequiredService<IOptions<DetailParserServiceSettings>>().Value;
 
             await queueService.ConsumeAsync<OfferLinkDto>(rabbitSettings.LinksQueue, async (offerLink) =>
             {
+                using var dbContext = await dbContextFactory.CreateDbContextAsync();
                 logger.LogInformation($"Received offer link: {offerLink.SourceUrl}");
                 var detailParserOptions = websites.FirstOrDefault(website => website.SiteUrl == offerLink.SourceUrl.Host)?.DetailParserOptions;
                 if (detailParserOptions is null) throw new ArgumentException($"Detail parser is not configured for such website: {offerLink.SourceUrl.Host}");
@@ -118,6 +120,11 @@ namespace JobsParser.DetailParserService
                     });
 
                     services.AddDbContext<AppDbContext>(options =>
+                    {
+                        options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]);
+                    });
+
+                    services.AddDbContextFactory<AppDbContext>(options =>
                     {
                         options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]);
                     });

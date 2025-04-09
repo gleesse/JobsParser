@@ -31,7 +31,6 @@ namespace JobsParser.Infrastructure.Parsers.Link
                     throw new ArgumentException($"Pagination requires {nameof(LinkParserOptions.ItemSelector)}.");
                 }
 
-                var targetUrl = !website.SearchUrls.IsNullOrEmpty() ? website.SearchUrls : throw new ArgumentNullException(nameof(website));
                 var totalLinks = new List<OfferLinkDto>();
 
                 website.SearchUrls.ToList().ForEach(searchUrl =>
@@ -39,7 +38,7 @@ namespace JobsParser.Infrastructure.Parsers.Link
                     var links = ParseLinksFromUrlAsync(searchUrl, website.LinkParserOptions).Result;
                     totalLinks.AddRange(links);
                 });
-
+                
                 return totalLinks;
             }
             catch (Exception ex)

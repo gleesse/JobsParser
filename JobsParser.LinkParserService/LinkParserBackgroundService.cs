@@ -64,6 +64,11 @@ namespace JobsParser.LinkParserService
                 var offerLinks = parser.ParseOfferLinksFromWebsite(website);
                 _logger.LogInformation($"Parsed {offerLinks.Count()} links for website: {website.SiteUrl}");
 
+                if(website.LinkParserOptions.RemoveQuery)
+                {
+                    offerLinks.ToList().ForEach(offerLink => offerLink.SourceUrl = new Uri(offerLink.SourceUrl.GetLeftPart(UriPartial.Path)));
+                }
+
                 int newLinks = 0;
                 int existingLinks = 0;
 

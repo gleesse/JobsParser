@@ -39,6 +39,7 @@
     {
         public string Type { get; set; }
         public string ItemSelector { get; set; }
+        public bool RemoveQuery { get; set; }
         public string NextPageButtonSelector { get; set; }
         public string ClickWhenLoadedSelector { get; set; }
     }

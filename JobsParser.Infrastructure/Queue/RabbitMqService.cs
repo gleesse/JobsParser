@@ -333,7 +333,7 @@ namespace JobParsers.Infrastructure.Queue
         private async Task HandleProcessingExceptionAsync(string queueName, BasicDeliverEventArgs ea, Exception ex)
         {
             _logger.LogError(ex, $"Error processing message from queue '{queueName}'.");
-            await _channel.BasicNackAsync(ea.DeliveryTag, false, true);
+            await _channel.BasicNackAsync(ea.DeliveryTag, false, false);
         }
 
         private void RegisterCancellationCallback(string queueName, string consumerTag)
