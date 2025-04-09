@@ -1,9 +1,16 @@
 # Todo List
 - [ ] Describe patterns used. What can be done better, pros/cons of such approach
+- [ ] Power bi rapport based on parsed data
+Link parser could use yield return to improve efficiency and save partial progress in case of error. 
 
 General todo
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 - [ ] Add browser reuse instead of re-creation for each link
+- [x] Link parser options add flag for removing query string
+- [x] Detail parser service - db context returned concurrent errors - to verify
+- [ ] Auto apply - select from offer where is_applied = 0
+- [ ] Auto apply - add cover letter generation and loading
+- [ ] Auto apply - test on different cases
 - [x] Adding an exit command. error/success
 - [x] bool isAplied, shouldApply, appliedAt
 - [x] Add error logging to file
