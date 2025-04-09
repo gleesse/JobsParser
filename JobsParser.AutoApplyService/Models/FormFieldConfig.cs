@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace JobsParser.AutoApplyService.Models

@@ -3,8 +3,10 @@ using System.Text.RegularExpressions;
 
 namespace JobsParser.AutoApplyService.Commands
 {
-    public abstract class Command
+    public abstract class Command(ILogger<Command> logger)
     {
+        protected readonly ILogger<Command> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
         public abstract Task ExecuteAsync(IPage page, CommandContext context);
 
         protected string ResolveVariables(string input, CommandContext context)

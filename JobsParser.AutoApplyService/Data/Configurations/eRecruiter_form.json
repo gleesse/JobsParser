@@ -1,0 +1,96 @@
+{
+  "formId": "eRecruiter_form",
+  "formName": "eRecruiter default form",
+  "fields": [
+    {
+      "fieldName": "FirstName",
+      "selector": "//input[contains(@name, 'tbName')]",
+      "dataValue": "${FirstName}",
+      "fieldType": "text"
+    },
+    {
+      "fieldName": "LastName",
+      "selector": "//input[contains(@name, 'tbSurname')]",
+      "dataValue": "${LastName}",
+      "fieldType": "text"
+    },
+    {
+      "fieldName": "Mail",
+      "selector": "//input[contains(@name, 'tbMail')]",
+      "dataValue": "${Email}",
+      "fieldType": "text"
+    },
+    {
+      "fieldName": "Phone",
+      "selector": "//input[contains(@name, 'tbCellPhone')]",
+      "dataValue": "${Phone}",
+      "fieldType": "text"
+    },
+    {
+      "fieldName": "Country",
+      "selector": "//select[contains(@name, 'lstCountries')]",
+      "dataValue": "${Country}",
+      "fieldType": "select"
+    },
+    {
+      "fieldName": "Region",
+      "selector": "//select[contains(@name, 'lstRegions')]",
+      "dataValue": "${Region}",
+      "fieldType": "select"
+    },
+    {
+      "fieldName": "City",
+      "selector": "//input[contains(@name, 'tbCity')]",
+      "dataValue": "${City}",
+      "fieldType": "select"
+    },
+    {
+      "fieldName": "BylyPracownik",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl44$rlstOptions')]",
+      "dataValue": "Nie",
+      "fieldType": "radio"
+    },
+    {
+      "fieldName": "Experience",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl45$rlstOptions')]",
+      "dataValue": "3-4 lata",
+      "fieldType": "radio"
+    },
+    {
+      "fieldName": "C# Knowledge",
+      "selector": "//input[contains(@name, 'ctl00_DefaultContent_ctl46_rlstOptions_4')]",
+      "dataValue": "3-4 lata",
+      "fieldType": "radio"
+    },
+    {
+      "fieldName": "CI/CD",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl47$lstOptions$0')]",
+      "dataValue": "true",
+      "fieldType": "checkbox"
+    },
+    {
+      "fieldName": "Docker",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl47$lstOptions$1')]",
+      "dataValue": "true",
+      "fieldType": "checkbox"
+    },
+    {
+      "fieldName": "Azure DevOps",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl47$lstOptions$3')]",
+      "dataValue": "true",
+      "fieldType": "checkbox"
+    },
+    {
+      "fieldName": "Inne",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl47$lstOptions$4')]",
+      "dataValue": "true",
+      "fieldType": "checkbox"
+    },
+    {
+      "fieldName": "English level",
+      "selector": "//input[contains(@name, 'ctl00$DefaultContent$ctl48$rlstOptions')]",
+      "dataValue": "B2 - średniozaawansowany wyższy",
+      "fieldType": "radio"
+    }
+  ]
+}

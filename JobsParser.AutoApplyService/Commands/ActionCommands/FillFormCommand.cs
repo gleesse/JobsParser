@@ -4,15 +4,25 @@ using Microsoft.Playwright;
 
 namespace JobsParser.AutoApplyService.Commands.ActionCommands
 {
-    public class FillFormCommand(string formId, IFormRepository formRepository, ILogger<FillFormCommand> logger) : Command
+    public class FillFormCommand : Command
     {
-        private readonly string _formId = formId ?? throw new ArgumentNullException(nameof(formId));
-        private readonly IFormRepository _formRepository = formRepository ?? throw new ArgumentNullException(nameof(formRepository));
-        private readonly ILogger<FillFormCommand> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly string _formId;
+        private readonly IFormRepository _formRepository;
+
+        public FillFormCommand(
+            string formId,
+            IFormRepository formRepository,
+            ILogger<FillFormCommand> logger)
+            : base(logger)
+        {
+            _formId = formId ?? throw new ArgumentNullException(nameof(formId));
+            _formRepository = formRepository ?? throw new ArgumentNullException(nameof(formRepository));
+        }
 
         public override async Task ExecuteAsync(IPage page, CommandContext context)
         {
             var resolvedFormId = ResolveVariables(_formId, context);
+            _logger.LogInformation("Filling form with ID: {FormId}", resolvedFormId);
 
             var formConfig = await _formRepository.GetFormConfigurationAsync(resolvedFormId);
 
@@ -25,11 +35,12 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
 
             if (formConfig.Fields == null || formConfig.Fields.Count == 0)
             {
-                _logger.LogWarning($"Form configuration {formConfig.FormId} has no fields to fill");
+                _logger.LogWarning("Form configuration {FormId} has no fields to fill", formConfig.FormId);
                 return;
             }
 
-            _logger.LogInformation($"Filling form {formConfig.FormName} (ID: {formConfig.FormId}) with {formConfig.Fields.Count} fields");
+            _logger.LogInformation("Filling form {FormName} (ID: {FormId}) with {FieldCount} fields",
+                formConfig.FormName, formConfig.FormId, formConfig.Fields.Count);
 
             foreach (var field in formConfig.Fields)
             {
@@ -37,11 +48,11 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
 
                 if (success)
                 {
-                    _logger.LogDebug($"Successfully filled field {field.FieldName}");
+                    _logger.LogDebug("Successfully filled field {FieldName}", field.FieldName);
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to fill field {field.FieldName}");
+                    _logger.LogWarning("Failed to fill field {FieldName}", field.FieldName);
                 }
             }
         }
@@ -56,26 +67,34 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
 
                 var count = await element.CountAsync();
 
-                if (count > 0)
+                if (count == 0)
                 {
-                    var isVisible = await element.IsVisibleAsync();
-                    var isEnabled = await element.IsEnabledAsync();
-
-                    if (isVisible && isEnabled)
-                    {
-                        string resolvedValue = ResolveVariables(field.DataValue, context);
-
-                        await FillElementByType(page, resolvedSelector, resolvedValue, field.FieldType);
-
-                        return true;
-                    }
+                    _logger.LogWarning("Element with selector '{Selector}' for field '{FieldName}' was not found on the page",
+                        resolvedSelector, field.FieldName);
+                    return false;
                 }
 
-                return false;
+                var isVisible = await element.IsVisibleAsync();
+                var isEnabled = await element.IsEnabledAsync();
+
+                if (!isVisible || !isEnabled)
+                {
+                    _logger.LogWarning("Element with selector '{Selector}' for field '{FieldName}' is not visible or enabled. Visible: {IsVisible}, Enabled: {IsEnabled}",
+                        resolvedSelector, field.FieldName, isVisible, isEnabled);
+                    return false;
+                }
+
+                string resolvedValue = ResolveVariables(field.DataValue, context);
+                _logger.LogDebug("Filling field '{FieldName}' with type '{FieldType}' using selector '{Selector}'",
+                    field.FieldName, field.FieldType, resolvedSelector);
+
+                await FillElementByType(page, resolvedSelector, resolvedValue, field.FieldType);
+
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Unexpected error filling field {field.FieldName}");
+                _logger.LogError(ex, "Unexpected error filling field {FieldName}: {ErrorMessage}", field.FieldName, ex.Message);
                 return false;
             }
         }
@@ -120,11 +139,12 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Failed to upload file {value} to {selector}");
+                        _logger.LogError(ex, "Failed to upload file {FileName} to {Selector}: {ErrorMessage}", value, selector, ex.Message);
                     }
                     break;
 
                 default:
+                    _logger.LogWarning("Unsupported field type {FieldType}", fieldType);
                     throw new ArgumentException($"Unsupported field type {fieldType}");
             }
         }

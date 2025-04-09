@@ -43,7 +43,8 @@ namespace JobsParser.AutoApplyService.DSL
         #region Commands
         private SequenceCommand ParseSequenceCommand(JsonNode node)
         {
-            var sequenceCommand = new SequenceCommand();
+            var logger = serviceProvider.GetRequiredService<ILogger<SequenceCommand>>();
+            var sequenceCommand = new SequenceCommand(logger);
             var commands = node["commands"]?.AsArray();
 
             if (commands != null)
@@ -80,7 +81,8 @@ namespace JobsParser.AutoApplyService.DSL
             var thenCommand = ParseCommand(thenNode);
             var elseCommand = elseNode != null ? ParseCommand(elseNode) : null;
 
-            return new IfElseCommand(condition, thenCommand, elseCommand);
+            var logger = serviceProvider.GetRequiredService<ILogger<IfElseCommand>>();
+            return new IfElseCommand(condition, thenCommand, elseCommand, logger);
         }
 
         private ClickCommand ParseClickCommand(JsonNode node)
@@ -91,10 +93,13 @@ namespace JobsParser.AutoApplyService.DSL
                 throw new ArgumentException("Click command requires a selector");
             }
 
-            int? timeout = int.TryParse(node["timeout"]?.GetValue<string>(), out var parsedTimeout) ? parsedTimeout : null;
-            var waitForNavigation = node["waitForNavigation"]?.GetValue<bool>() ?? false;
+            int? customTimeout = int.TryParse(node["customTimeout"]?.GetValue<string>(), out var parsedCustomTimeout) ? parsedCustomTimeout : null;
+            int? waitForTimeoutSeconds = int.TryParse(node["waitForTimeoutSeconds"]?.GetValue<string>(), out var parsedWaitTimeout) ? parsedWaitTimeout : null;
+            var waitForNetworkIdle = node["waitForNetworkIdle"]?.GetValue<bool>() ?? false;
+            string? waitForSelector = node["waitForSelector"]?.GetValue<string>();
 
-            return new ClickCommand(selector, timeout, waitForNavigation);
+            var logger = serviceProvider.GetRequiredService<ILogger<ClickCommand>>();
+            return new ClickCommand(selector, logger, waitForTimeoutSeconds, customTimeout, waitForNetworkIdle, waitForSelector);
         }
 
         private FillFormCommand ParseFillFormCommand(JsonNode node)
@@ -120,8 +125,9 @@ namespace JobsParser.AutoApplyService.DSL
             }
 
             var waitUntil = node["waitUntil"]?.GetValue<string>() ?? "load";
+            var logger = serviceProvider.GetRequiredService<ILogger<NavigateCommand>>();
 
-            return new NavigateCommand(url, waitUntil);
+            return new NavigateCommand(url, waitUntil, logger);
         }
 
         private ElementExistsCommand ParseElementExistsCommand(JsonNode node)
@@ -133,8 +139,9 @@ namespace JobsParser.AutoApplyService.DSL
             }
 
             int? timeout = int.TryParse(node["timeout"]?.GetValue<string>(), out var parsedTimeout) ? parsedTimeout : null;
+            var logger = serviceProvider.GetRequiredService<ILogger<ElementExistsCommand>>();
 
-            return new ElementExistsCommand(selector, timeout);
+            return new ElementExistsCommand(selector, timeout, logger);
         }
 
         private ExitCommand ParseExitCommand(JsonNode node)
@@ -145,7 +152,8 @@ namespace JobsParser.AutoApplyService.DSL
                 throw new ArgumentException("Exists command requires a success value");
             }
 
-            return new ExitCommand(success.Value);
+            var logger = serviceProvider.GetRequiredService<ILogger<ExitCommand>>();
+            return new ExitCommand(success.Value, logger);
         }
         #endregion
     }

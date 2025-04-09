@@ -9,31 +9,18 @@ using Microsoft.Extensions.Options;
 
 namespace JobsParser.AutoApplyService
 {
-    public class AutoApplyBackgroundService : BackgroundService
+    public class AutoApplyBackgroundService(
+        ILogger<AutoApplyBackgroundService> logger,
+        IServiceProvider serviceProvider,
+        IOptions<AutoApplyServiceOptions> options,
+        IWorkflowRepository workflowRepository,
+        WorkflowExecutor workflowExecutor) : BackgroundService
     {
-        private readonly ILogger<AutoApplyBackgroundService> _logger;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly AutoApplyServiceOptions _options;
-        private readonly IWorkflowRepository _workflowRepository;
-        private readonly WorkflowExecutor _workflowExecutor;
-
-        public AutoApplyBackgroundService(
-            ILogger<AutoApplyBackgroundService> logger,
-            IServiceProvider serviceProvider,
-            IOptions<AutoApplyServiceOptions> options,
-            IWorkflowRepository workflowRepository,
-            WorkflowExecutor workflowExecutor)
-        {
-            _logger = logger;
-            _serviceProvider = serviceProvider;
-            _options = options.Value;
-            _workflowRepository = workflowRepository;
-            _workflowExecutor = workflowExecutor;
-        }
+        private readonly AutoApplyServiceOptions _options = options.Value;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Auto Apply Service starting");
+            logger.LogInformation("Auto Apply Service starting");
             try
             {
                 while (!stoppingToken.IsCancellationRequested)
@@ -44,7 +31,7 @@ namespace JobsParser.AutoApplyService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error processing pending applications");
+                        logger.LogError(ex, "Error processing pending applications");
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(_options.PollingIntervalSeconds), stoppingToken);
@@ -56,31 +43,32 @@ namespace JobsParser.AutoApplyService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error in Auto Apply Service");
+                logger.LogError(ex, "Unexpected error in Auto Apply Service");
             }
 
-            _logger.LogInformation("Auto Apply Service stopping");
+            logger.LogInformation("Auto Apply Service stopping");
         }
 
         private async Task ProcessPendingApplicationsAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Processing pending applications");
+            logger.LogInformation("Processing pending applications");
 
             // Get job links that haven't been applied to yet
-            var dbContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
+            var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
             var pendingLinks = await dbContext.Offers
                 //.Where(link => !link.IsApplied && link.IsProcessed) todo
+                .Where(link => link.Id == 299)
                 //.OrderBy(link => link.CreatedAt)
                 .Take(_options.MaxConcurrentInstances)
                 .ToListAsync(stoppingToken);
 
             if (!pendingLinks.Any())
             {
-                _logger.LogInformation("No pending applications found");
+                logger.LogInformation("No pending applications found");
                 return;
             }
 
-            _logger.LogInformation("Found {Count} pending applications", pendingLinks.Count);
+            logger.LogInformation("Found {Count} pending applications", pendingLinks.Count);
 
             // Process each link in parallel, limited by MaxConcurrentInstances
             var tasks = pendingLinks.Select(link => ProcessJobOfferAsync(link, stoppingToken));
@@ -91,14 +79,14 @@ namespace JobsParser.AutoApplyService
         {
             ArgumentNullException.ThrowIfNull(jobOffer, nameof(jobOffer));
 
-            _logger.LogInformation("Processing job link: {Url}", jobOffer.Url);
+            logger.LogInformation("Processing job link: {Url}", jobOffer.Url);
 
             try
             {
-                var dbContext = _serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
+                var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 
                 string workflowName = DetermineWorkflowName(jobOffer.Url);
-                var workflow = await _workflowRepository.GetWorkflowAsync(workflowName);
+                var workflow = await workflowRepository.GetWorkflowAsync(workflowName);
 
                 // Create initial context with job data
                 var context = new CommandContext();
@@ -112,10 +100,10 @@ namespace JobsParser.AutoApplyService
                 context.SetVariable("UserSecondName", "Test 2");
                 context.SetVariable("UserPhone", "793 793 793");
 
-                await _workflowExecutor.ExecuteWorkflowAsync(workflow, context);
+                await workflowExecutor.ExecuteWorkflowAsync(workflow, context);
 
                 bool isApplied = false;
-                
+
                 if (context.TryGetVariable("WorkflowFinishedSuccessfully", out bool? successValue))
                 {
                     isApplied = successValue ?? false;
@@ -134,16 +122,16 @@ namespace JobsParser.AutoApplyService
 
                 if (isApplied)
                 {
-                    _logger.LogInformation("Successfully applied to job: {Url}", jobOffer.Url);
+                    logger.LogInformation("Successfully applied to job: {Url}", jobOffer.Url);
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to apply to job: {Url}", jobOffer.Url);
+                    logger.LogWarning("Failed to apply to job: {Url}", jobOffer.Url);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error applying to job: {Url}", jobOffer.Url);
+                logger.LogError(ex, "Error applying to job: {Url}", jobOffer.Url);
             }
         }
 

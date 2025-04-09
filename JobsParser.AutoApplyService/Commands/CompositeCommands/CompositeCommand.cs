@@ -1,6 +1,6 @@
 namespace JobsParser.AutoApplyService.Commands.CompositeCommands
 {
-    public abstract class CompositeCommand : Command
+    public abstract class CompositeCommand(ILogger<CompositeCommand> logger) : Command(logger)
     {
         protected readonly List<Command> Children = [];
 

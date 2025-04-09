@@ -15,8 +15,7 @@
       },
       "then": {
         "type": "click",
-        "selector": "button[data-test='button-submitCookie']",
-        "waitForNavigation": false
+        "selector": "button[data-test='button-submitCookie']"
       }
     },
     {
@@ -32,35 +31,60 @@
           {
             "type": "click",
             "selector": "//div[@data-test='section-quick-applying-sidebar']//span[contains(text(), 'Aplikuj szybko')]",
-            "waitForNavigation": true
-          },
-          {
-            "type": "fillform",
-            "formId": "pracuj_form"
+            "waitForTimeoutSeconds": "25"
           },
           {
             "type": "ifelse",
             "condition": {
               "type": "exists",
-              "selector": "button[data-test='button-submitCookie']",
-              "timeout": "1000"
+              "selector": "//h1[contains(text(), 'Pytania od pracodawcy') or contains(text(), 'Formularz aplikacyjny')]"
             },
             "then": {
-              "type": "click",
-              "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
-              "waitForNavigation": true
-            }
-          },
-          {
-            "type": "ifelse",
-            "condition": {
-              "type": "exists",
-              "selector": "//title[contains(text(), 'Dziękujemy')]",
-              "timeout": "1000"
-            },
-            "then": {
-              "type": "exit",
-              "success": true
+              "type": "sequence",
+              "commands": [
+                {
+                  "type": "ifelse",
+                  "condition": {
+                    "type": "exists",
+                    "selector": "//button[@data-test='button-submit']",
+                    "timeout": "1000"
+                  },
+                  "then": {
+                    "type": "click",
+                    "selector": "//button[@data-test='button-submit']",
+                    "waitForTimeoutSeconds": "7"
+                  }
+                },
+                {
+                  "type": "ifelse",
+                  "condition": {
+                    "type": "exists",
+                    "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
+                    "timeout": "1000"
+                  },
+                  "then": {
+                    "type": "click",
+                    "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
+                    "waitForTimeoutSeconds": "7"
+                  }
+                },
+                {
+                  "type": "ifelse",
+                  "condition": {
+                    "type": "exists",
+                    "selector": "//title[contains(text(), 'Dziękujemy | Pracuj.pl')]",
+                    "timeout": "5000"
+                  },
+                  "then": {
+                    "type": "exit",
+                    "success": true
+                  },
+                  "else": {
+                    "type": "exit",
+                    "success": false
+                  }
+                }
+              ]
             },
             "else": {
               "type": "exit",
@@ -68,6 +92,10 @@
             }
           }
         ]
+      },
+      "else": {
+        "type": "exit",
+        "success": false
       }
     }
   ]
