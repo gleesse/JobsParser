@@ -7,7 +7,7 @@
 General todo
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 - [ ] Add browser reuse instead of re-creation for each link
-- [ ] Link parser options add flag to cut off query(for example, pracuj includes searchId query)
+- [x] Link parser options add flag for removing query string
 - [ ] Detail parser service - db context returned concurrent errors - to verify
 - [ ] Auto apply - select from offer where is_applied = 0
 - [ ] Auto apply - add cover letter generation and loading
