@@ -6,6 +6,9 @@ General todo
 - [ ] Add browser reuse instead of re-creation for each link
 - [ ] Link parser options add flag to cut off query(for example, pracuj includes searchId query)
 - [ ] Detail parser service - db context returned concurrent errors - to verify
+- [ ] Auto apply - select from offer where is_applied = 0
+- [ ] Auto apply - add cover letter generation and loading
+- [ ] Auto apply - test on different cases
 - [x] Adding an exit command. error/success
 - [x] bool isAplied, shouldApply, appliedAt
 - [x] Add error logging to file
