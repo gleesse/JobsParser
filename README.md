@@ -1,5 +1,6 @@
 # Todo List
 - [ ] Describe patterns used. What can be done better, pros/cons of such approach
+- [ ] Power bi rapport based on parsed data
 
 General todo
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
