@@ -2,6 +2,8 @@
 - [ ] Describe patterns used. What can be done better, pros/cons of such approach
 - [ ] Power bi rapport based on parsed data
 
+- [ ] Link parser could use yield return to improve efficiency and save partial progress in case of error. 
+
 General todo
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 - [ ] Add browser reuse instead of re-creation for each link
