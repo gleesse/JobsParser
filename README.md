@@ -4,6 +4,7 @@
 Link parser could use yield return to improve efficiency and save partial progress in case of error. 
 
 General todo
+- [ ] Auto apply pracuj.json workflow - replce timeout with waitForTimeoutSeconds
 - [x] Mechanizm to stop consuming for 3 hours when received 429 Too Many Requests
 - [x] Link parser options add flag for removing query string
 - [x] Detail parser service - db context returned concurrent errors - to verify
