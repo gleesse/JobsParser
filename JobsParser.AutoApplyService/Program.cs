@@ -7,6 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 IHost host = Host.CreateDefaultBuilder(args)
+    .ConfigureAppConfiguration((hostingContext, config) =>
+    {
+        config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+    })
     .ConfigureServices((hostContext, services) =>
     {
         services.AddLogging(builder =>
