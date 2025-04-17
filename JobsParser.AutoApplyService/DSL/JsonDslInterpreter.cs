@@ -36,6 +36,7 @@ namespace JobsParser.AutoApplyService.DSL
                 "navigate" => ParseNavigateCommand(node),
                 "exists" => ParseElementExistsCommand(node),
                 "exit" => ParseExitCommand(node),
+                "screenshot" => ParseTakeScreenshotCommand(node),
                 _ => throw new ArgumentException($"Unknown command type: {type}")
             };
         }
@@ -147,13 +148,28 @@ namespace JobsParser.AutoApplyService.DSL
         private ExitCommand ParseExitCommand(JsonNode node)
         {
             var success = node["success"]?.GetValue<bool>();
+            var message = node["message"]?.GetValue<string?>();
+
             if (success == null)
             {
                 throw new ArgumentException("Exists command requires a success value");
             }
 
             var logger = serviceProvider.GetRequiredService<ILogger<ExitCommand>>();
-            return new ExitCommand(success.Value, logger);
+            return new ExitCommand(success.Value, message, logger);
+        }
+
+        private TakeScreenshotCommand ParseTakeScreenshotCommand(JsonNode node)
+        {
+            var screenshotPath = node["path"]?.GetValue<string?>() ?? "logs/${JobId}/";
+
+            if (string.IsNullOrEmpty(screenshotPath))
+            {
+                throw new ArgumentException("Screenshot command requires 'path' variable");
+            }
+
+            var logger = serviceProvider.GetRequiredService<ILogger<TakeScreenshotCommand>>();
+            return new TakeScreenshotCommand(screenshotPath, logger);
         }
         #endregion
     }
