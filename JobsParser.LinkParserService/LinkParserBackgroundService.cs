@@ -2,6 +2,7 @@
 using JobsParser.Core.Models;
 using JobsParser.Infrastructure.Database;
 using JobsParser.Infrastructure.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,7 +14,7 @@ namespace JobsParser.LinkParserService
         IOptions<List<WebsiteConfiguration>> websiteConfigurations,
         IParserFactory parserFactory,
         IQueueService queueService,
-        AppDbContext dbContext,
+        IDbContextFactory<AppDbContext> dbContextFactory,
         IOptions<RabbitSettings> rabbitSettings,
         IOptions<LinkParserServiceSettings> serviceSettings) : BackgroundService
     {
@@ -21,7 +22,6 @@ namespace JobsParser.LinkParserService
         private readonly List<WebsiteConfiguration> _websiteConfigurations = websiteConfigurations != default ? websiteConfigurations.Value : throw new ArgumentNullException(nameof(websiteConfigurations));
         private readonly IParserFactory _parserFactory = parserFactory;
         private readonly IQueueService _queueService = queueService;
-        private readonly AppDbContext _dbContext = dbContext;
         private readonly RabbitSettings _rabbitSettings = rabbitSettings != default ? rabbitSettings.Value : throw new ArgumentNullException(nameof(rabbitSettings));
         private readonly LinkParserServiceSettings _serviceSettings = serviceSettings != default ? serviceSettings.Value : throw new ArgumentNullException(nameof(serviceSettings));
         private TimeSpan ExecutionInterval => TimeSpan.FromHours(_serviceSettings.ExecutionIntervalHours);
@@ -72,10 +72,12 @@ namespace JobsParser.LinkParserService
                 int newLinks = 0;
                 int existingLinks = 0;
 
+                using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
                 foreach (var link in offerLinks)
                 {
                     // Check if offer already exists in the database
-                    if (await _dbContext.OfferExistsAsync(link.SourceUrl.ToString()))
+                    if (await dbContext.OfferExistsAsync(link.SourceUrl.ToString()))
                     {
                         existingLinks++;
                         _logger.LogInformation($"Offer already exists in database: {link.SourceUrl}");

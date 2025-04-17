@@ -62,14 +62,9 @@ namespace JobsParser.LinkParserService
                     return context.NewPageAsync().GetAwaiter().GetResult();
                 });
 
-                // Add DbContext
-                services.AddDbContext<AppDbContext>(options =>
-                    options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]));
-
                 services.AddDbContextFactory<AppDbContext>(options =>
                     options.UseSqlServer(hostContext.Configuration.GetSection("DatabaseSettings")["ConnectionString"]));
 
-                // Add the background service
                 services.AddHostedService<LinkParserBackgroundService>();
             });
     }

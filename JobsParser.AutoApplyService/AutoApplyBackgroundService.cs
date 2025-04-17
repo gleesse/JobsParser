@@ -17,7 +17,6 @@ namespace JobsParser.AutoApplyService
         WorkflowExecutor workflowExecutor) : BackgroundService
     {
         private readonly AutoApplyServiceOptions _options = options.Value;
-        private readonly AppDbContext _dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
