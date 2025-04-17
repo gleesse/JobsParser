@@ -17,6 +17,7 @@ namespace JobsParser.AutoApplyService
         WorkflowExecutor workflowExecutor) : BackgroundService
     {
         private readonly AutoApplyServiceOptions _options = options.Value;
+        private readonly AppDbContext _dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -54,15 +55,17 @@ namespace JobsParser.AutoApplyService
             logger.LogInformation("Processing pending applications");
 
             // Get job links that haven't been applied to yet
-            var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
+            using var scope = serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
             var pendingLinks = await dbContext.Offers
-                //.Where(link => !link.IsApplied && link.IsProcessed) todo
-                .Where(link => link.Id == 299)
-                //.OrderBy(link => link.CreatedAt)
+                .AsNoTracking()
+                .Where(link => !link.IsApplied && link.ShouldApply)
+                .OrderBy(link => link.AudDate)
                 .Take(_options.MaxConcurrentInstances)
                 .ToListAsync(stoppingToken);
 
-            if (!pendingLinks.Any())
+          if (!pendingLinks.Any())
             {
                 logger.LogInformation("No pending applications found");
                 return;
@@ -83,8 +86,6 @@ namespace JobsParser.AutoApplyService
 
             try
             {
-                var dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
-
                 string workflowName = DetermineWorkflowName(jobOffer.Url);
                 var workflow = await workflowRepository.GetWorkflowAsync(workflowName);
 
@@ -103,31 +104,45 @@ namespace JobsParser.AutoApplyService
                 await workflowExecutor.ExecuteWorkflowAsync(workflow, context);
 
                 bool isApplied = false;
+                string errMsg = string.Empty;
 
                 if (context.TryGetVariable("WorkflowFinishedSuccessfully", out bool? successValue))
                 {
                     isApplied = successValue ?? false;
                 }
-                //Mark the job as applied todo
-                jobOffer.IsApplied = isApplied;
-                jobOffer.ShouldApply = !isApplied;
 
-                jobOffer.ApplicationAttempts.Add(new ApplicationAttempt
+                if (context.TryGetVariable("WorkflowFinishedMessage", out string? message) && message != null)
+                {
+                    errMsg = message;
+                }
+
+                using var scope = serviceProvider.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var trackedOffer = await dbContext.Offers
+                    .Include(o => o.ApplicationAttempts)
+                    .FirstAsync(o => o.Id == jobOffer.Id, stoppingToken);
+
+                trackedOffer.ApplicationAttempts.Add(new ApplicationAttempt
                 {
                     AppliedAt = DateTime.UtcNow,
-                    Status = isApplied ? "Success" : "Failure"
+                    Status = isApplied ? "Success" : "Failure",
+                    ErrorMsg = errMsg
                 });
-
-                await dbContext.SaveChangesAsync(stoppingToken);
 
                 if (isApplied)
                 {
-                    logger.LogInformation("Successfully applied to job: {Url}", jobOffer.Url);
+                    logger.LogInformation("Successfully applied to job: {Url}", trackedOffer.Url);
+                    trackedOffer.IsApplied = true; //Make changes only when true to avoid overwriting values from the database. Say updating record after manual application etc.
+                    trackedOffer.ShouldApply = false;
                 }
                 else
                 {
-                    logger.LogWarning("Failed to apply to job: {Url}", jobOffer.Url);
+                    logger.LogWarning("Failed to apply to job: {Url}", trackedOffer.Url);
+                    trackedOffer.ShouldApply = false;
                 }
+
+                await dbContext.SaveChangesAsync(stoppingToken);
             }
             catch (Exception ex)
             {
