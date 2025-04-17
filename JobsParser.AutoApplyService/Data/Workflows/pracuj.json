@@ -50,9 +50,18 @@
                     "timeout": "1000"
                   },
                   "then": {
-                    "type": "click",
-                    "selector": "//button[@data-test='button-submit']",
-                    "waitForTimeoutSeconds": "7"
+                    "type": "sequence",
+                    "commands": [
+                      {
+                        "type": "screenshot",
+                        "path": "screenshots/logs/${JobId}/"
+                      },
+                      {
+                        "type": "click",
+                        "selector": "//button[@data-test='button-submit']",
+                        "waitForTimeoutSeconds": "7"
+                      }
+                    ]
                   }
                 },
                 {
@@ -63,9 +72,18 @@
                     "timeout": "1000"
                   },
                   "then": {
-                    "type": "click",
-                    "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
-                    "waitForTimeoutSeconds": "7"
+                    "type": "sequence",
+                    "commands": [
+                      {
+                        "type": "screenshot",
+                        "path": "screenshots/logs/${JobId}/"
+                      },
+                      {
+                        "type": "click",
+                        "selector": "//button[@data-test='buttonSubmit-questionnaireForm']",
+                        "waitForTimeoutSeconds": "7"
+                      }
+                    ]
                   }
                 },
                 {
@@ -80,22 +98,55 @@
                     "success": true
                   },
                   "else": {
-                    "type": "exit",
-                    "success": false
+                    "type": "sequence",
+                    "commands": [
+                      {
+                        "type": "screenshot",
+                        "path": "screenshots/logs/${JobId}/"
+                      },
+                      {
+                        "type": "exit",
+                        "success": false,
+                        "message": "Nie udało się znaleźć tekstu 'Dziękujemy | Pracuj.pl'."
+                      }
+                    ]
                   }
                 }
               ]
             },
             "else": {
-              "type": "exit",
-              "success": false
+              "type": "ifelse",
+              "condition": {
+                "type": "exists",
+                "selector": "//title[contains(text(), 'Dziękujemy | Pracuj.pl')]",
+                "timeout": "5000"
+              },
+              "then": {
+                "type": "exit",
+                "success": true
+              },
+              "else": {
+                "type": "sequence",
+                "commands": [
+                  {
+                    "type": "screenshot",
+                    "path": "screenshots/logs/${JobId}/"
+                  },
+                  {
+                    "type": "exit",
+                    "success": false,
+                    "message": "Nie udało się znaleźć tekstu 'Dziękujemy | Pracuj.pl'."
+                  }
+                ]
+              }
             }
           }
         ]
       },
       "else": {
         "type": "exit",
-        "success": false
+        "success": false,
+        "message": "Nie udało się znaleźć przycisku 'Aplikuj szybko'."
       }
     }
   ]
