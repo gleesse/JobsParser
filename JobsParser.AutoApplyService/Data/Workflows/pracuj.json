@@ -54,7 +54,7 @@
                     "commands": [
                       {
                         "type": "screenshot",
-                        "path": "screenshots/logs/${JobId}/"
+                        "path": "logs/screenshots/${JobId}/"
                       },
                       {
                         "type": "click",
@@ -76,7 +76,7 @@
                     "commands": [
                       {
                         "type": "screenshot",
-                        "path": "screenshots/logs/${JobId}/"
+                        "path": "logs/screenshots/${JobId}/"
                       },
                       {
                         "type": "click",
@@ -102,7 +102,7 @@
                     "commands": [
                       {
                         "type": "screenshot",
-                        "path": "screenshots/logs/${JobId}/"
+                        "path": "logs/screenshots/${JobId}/"
                       },
                       {
                         "type": "exit",
@@ -130,7 +130,7 @@
                 "commands": [
                   {
                     "type": "screenshot",
-                    "path": "screenshots/logs/${JobId}/"
+                    "path": "logs/screenshots/${JobId}/"
                   },
                   {
                     "type": "exit",

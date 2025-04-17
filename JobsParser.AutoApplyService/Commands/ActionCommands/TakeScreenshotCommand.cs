@@ -9,7 +9,11 @@ namespace JobsParser.AutoApplyService.Commands.ActionCommands
             try
             {
                 var resolvedPath = ResolveVariables(path, context);
-                await page.ScreenshotAsync(new PageScreenshotOptions { Path = $"{resolvedPath}/{Guid.NewGuid()}.png" });
+                await page.ScreenshotAsync(new PageScreenshotOptions 
+                { 
+                    Path = $"{resolvedPath}/{Guid.NewGuid()}.png",
+                    FullPage = true
+                });
                 logger.LogInformation($"Screenshot taken and saved to {resolvedPath}");
             }
             catch (Exception ex)
